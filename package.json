@@ -1,0 +1,40 @@
+{
+  "name": "bryllups-planlaegger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI-agent der kontakter bryllupsleverandoerer paa parrets vegne",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "build": "tsc -p tsconfig.json",
+    "migrate": "tsx src/scripts/migrate.ts",
+    "seed": "tsx src/scripts/seed-demo.ts",
+    "eval:parse": "tsx src/scripts/eval-parse.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "demo": "tsx src/scripts/demo.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
+    "@electric-sql/pglite": "^0.5.8",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemailer": "^10.0.10",
+    "pg": "^8.23.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.20.3",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

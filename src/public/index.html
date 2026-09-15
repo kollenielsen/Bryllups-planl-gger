@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bryllupsplanlægger</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ctext y='13' font-size='13'%3E%F0%9F%92%8C%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <h1>Bryllupsplanlægger</h1>
+      <span id="mode" class="pill mute">indlæser…</span>
+      <div class="spacer"></div>
+      <select id="weddingPicker" style="width:auto;min-width:220px"></select>
+      <button class="ghost small" id="newWeddingBtn">Nyt bryllup</button>
+    </header>
+
+    <main class="wrap">
+      <div id="banner"></div>
+
+      <section id="intake" class="card" hidden>
+        <h2>Fortæl om brylluppet</h2>
+        <p class="muted">Udfyldes én gang. Agenten bruger udelukkende disse oplysninger i sine mails.</p>
+        <form id="intakeForm">
+          <div class="fields">
+            <div class="field"><label>Parrets navne</label><input name="couple_names" required placeholder="Mia og Jonas" /></div>
+            <div class="field"><label>Jeres mail</label><input name="contact_email" type="email" required placeholder="mia@example.dk" /></div>
+            <div class="field"><label>Telefon (valgfrit)</label><input name="contact_phone" placeholder="12 34 56 78" /></div>
+            <div class="field"><label>Bryllupsdato</label><input name="wedding_date" type="date" /></div>
+            <div class="field"><label>Område</label><input name="region" required placeholder="Sjælland" /></div>
+            <div class="field"><label>Gæster (min)</label><input name="guest_count_min" type="number" min="1" required value="60" /></div>
+            <div class="field"><label>Gæster (maks)</label><input name="guest_count_max" type="number" min="1" required value="90" /></div>
+            <div class="field"><label>Budget min (kr.)</label><input name="budget_min" type="number" min="0" /></div>
+            <div class="field"><label>Budget maks (kr.)</label><input name="budget_max" type="number" min="0" /></div>
+          </div>
+          <div class="field"><label>Stil (kommasepareret)</label><input name="style_tags" placeholder="rustik, udendørs vielse, lange borde" /></div>
+          <div class="field"><label>Skal-krav (kommasepareret)</label><input name="must_haves" placeholder="plads til 90, egen catering tilladt, overnatning på stedet" /></div>
+          <div class="field"><label>Andet agenten må nævne</label><textarea name="notes" placeholder="Fx: vi gifter os i kirken kl. 14 og vil gerne ankomme til festen kl. 16."></textarea></div>
+          <div class="row">
+            <label class="row" style="margin:0"><input type="checkbox" name="date_flexible" style="width:auto" /> &nbsp;Datoen er fleksibel</label>
+            <div class="spacer"></div>
+            <button type="submit">Opret og find leverandører</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="dashboard" hidden>
+        <div class="card" style="margin-bottom:16px">
+          <div class="row">
+            <div>
+              <h3 id="coupleNames"></h3>
+              <div class="muted" id="weddingMeta"></div>
+            </div>
+            <div class="spacer"></div>
+            <button class="ghost small" data-act="discover">Find leverandører</button>
+            <button class="ghost small" data-act="outreach-venue">Skriv til lokaler</button>
+            <button class="ghost small" data-act="outreach-photographer">Skriv til fotografer</button>
+            <button class="quiet small" data-act="run-queue">Kør kø nu</button>
+          </div>
+        </div>
+
+        <div class="grid two" style="margin-bottom:16px">
+          <div class="card">
+            <h2>Venter på jer</h2>
+            <div id="questions"></div>
+          </div>
+          <div class="card">
+            <h2>Mails klar til godkendelse</h2>
+            <div id="outbox"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px">
+          <h2>Skal læses af et menneske</h2>
+          <p class="muted" style="margin-top:-6px">Svar hvor agenten ikke kunne bekræfte tallene i leverandørens egen tekst.</p>
+          <div id="review"></div>
+        </div>
+
+        <div id="categories"></div>
+      </section>
+    </main>
+
+    <dialog id="threadDialog">
+      <div class="row">
+        <h3 id="threadTitle" style="margin:0"></h3>
+        <div class="spacer"></div>
+        <button class="quiet small" id="closeThread">Luk</button>
+      </div>
+      <div class="muted mono" id="threadMeta" style="margin:6px 0 12px"></div>
+      <div class="thread" id="threadMessages"></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:14px 0" />
+      <label>Bed agenten følge op på noget bestemt</label>
+      <div class="row">
+        <textarea id="followupText" style="flex:1" placeholder="Fx: spørg om vi må have vores egen fotograf med, og om der er overnatning på stedet."></textarea>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="small" id="sendFollowup">Skriv opfølgning</button>
+        <div class="spacer"></div>
+        <details>
+          <summary class="muted">Simulér et svar (demo)</summary>
+          <div style="margin-top:8px;width:min(620px,70vw)">
+            <textarea id="simulateText" placeholder="Indsæt et leverandørsvar, som om det var kommet ind i indbakken."></textarea>
+            <button class="quiet small" id="simulateBtn" style="margin-top:6px">Kør gennem pipelinen</button>
+          </div>
+        </details>
+      </div>
+    </dialog>
+
+    <dialog id="bookingDialog">
+      <div class="row">
+        <h3 id="bookingTitle" style="margin:0"></h3>
+        <div class="spacer"></div>
+        <button class="quiet small" id="closeBooking">Luk</button>
+      </div>
+      <div id="bookingBody" style="margin-top:12px"></div>
+    </dialog>
+
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

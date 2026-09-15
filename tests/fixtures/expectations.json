@@ -1,0 +1,70 @@
+{
+  "note": "Forventninger til udtræk af de vedlagte eksempelmails. Bruges af 'npm run eval:parse', som kalder den rigtige model. Felter der ikke er nævnt, vurderes ikke.",
+  "cases": [
+    {
+      "file": "venue-quote-per-guest.txt",
+      "category": "venue",
+      "expect": {
+        "reply_intent": "quote",
+        "price_min": 1250,
+        "price_max": 1250,
+        "price_basis": "per_guest",
+        "price_includes_vat": true,
+        "availability": "tentative",
+        "min_vendor_questions": 2,
+        "needs_human_review": false
+      }
+    },
+    {
+      "file": "venue-unavailable.txt",
+      "category": "venue",
+      "expect": {
+        "reply_intent": "unavailable",
+        "price_min": null,
+        "price_max": null,
+        "availability": "unavailable"
+      }
+    },
+    {
+      "file": "photographer-package-range.txt",
+      "category": "photographer",
+      "expect": {
+        "reply_intent": "quote",
+        "price_min": 15500,
+        "price_max": 24900,
+        "price_basis": "total",
+        "price_includes_vat": true,
+        "availability": "available",
+        "needs_human_review": false
+      }
+    },
+    {
+      "file": "photographer-questions.txt",
+      "category": "photographer",
+      "expect": {
+        "reply_intent": "question",
+        "availability": "unknown",
+        "min_vendor_questions": 3
+      }
+    },
+    {
+      "file": "ambiguous-price.txt",
+      "category": "venue",
+      "expect": {
+        "needs_human_review": true
+      }
+    },
+    {
+      "file": "outlook-history.txt",
+      "category": "venue",
+      "expect": {
+        "reply_intent": "quote",
+        "price_min": 45000,
+        "price_max": 45000,
+        "price_basis": "total",
+        "price_includes_vat": false,
+        "availability": "available"
+      }
+    }
+  ]
+}

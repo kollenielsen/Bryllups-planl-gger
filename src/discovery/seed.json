@@ -1,0 +1,21 @@
+{
+  "note": "Demodata. Alle navne og mailadresser er opdigtede og bruger example.com, så en fejlkonfigureret kørsel aldrig rammer en rigtig leverandør. Erstattes af Google Places eller en kurateret liste i produktion.",
+  "vendors": [
+    { "name": "Søgaard Gods", "category": "venue", "region": "Sjælland", "city": "Ringsted", "contact_email": "kontakt@soegaard-gods.example.com", "website": "https://soegaard-gods.example.com", "rating": 4.7 },
+    { "name": "Havnepakhuset", "category": "venue", "region": "Sjælland", "city": "Køge", "contact_email": "booking@havnepakhuset.example.com", "website": "https://havnepakhuset.example.com", "rating": 4.5 },
+    { "name": "Villa Kastanie", "category": "venue", "region": "København", "city": "Frederiksberg", "contact_email": "info@villakastanie.example.com", "website": "https://villakastanie.example.com", "rating": 4.8 },
+    { "name": "Nordhavn Loftet", "category": "venue", "region": "København", "city": "København Ø", "contact_email": "selskab@nordhavnloftet.example.com", "website": "https://nordhavnloftet.example.com", "rating": 4.4 },
+    { "name": "Ladegården ved Åen", "category": "venue", "region": "Fyn", "city": "Odense", "contact_email": "fest@ladegaarden-aaen.example.com", "website": "https://ladegaarden-aaen.example.com", "rating": 4.6 },
+    { "name": "Klitgaard Strandhotel", "category": "venue", "region": "Nordjylland", "city": "Løkken", "contact_email": "booking@klitgaard-strand.example.com", "website": "https://klitgaard-strand.example.com", "rating": 4.3 },
+    { "name": "Herregården Bøgelund", "category": "venue", "region": "Jylland", "city": "Horsens", "contact_email": "kontakt@boegelund.example.com", "website": "https://boegelund.example.com", "rating": 4.6 },
+    { "name": "Mosehuset Bryllupsgård", "category": "venue", "region": "Jylland", "city": "Silkeborg", "contact_email": "hej@mosehuset.example.com", "website": "https://mosehuset.example.com", "rating": 4.2 },
+    { "name": "Foto Marek Lind", "category": "photographer", "region": "Sjælland", "city": "Roskilde", "contact_email": "marek@mareklind.example.com", "website": "https://mareklind.example.com", "rating": 4.9 },
+    { "name": "Studio Nord Fotografi", "category": "photographer", "region": "København", "city": "København N", "contact_email": "booking@studionord.example.com", "website": "https://studionord.example.com", "rating": 4.7 },
+    { "name": "Elly Bruun Foto", "category": "photographer", "region": "København", "city": "Valby", "contact_email": "elly@ellybruun.example.com", "website": "https://ellybruun.example.com", "rating": 4.8 },
+    { "name": "Fotograf Jens Overgaard", "category": "photographer", "region": "Fyn", "city": "Svendborg", "contact_email": "jens@overgaardfoto.example.com", "website": "https://overgaardfoto.example.com", "rating": 4.5 },
+    { "name": "Lys & Lærke Fotografi", "category": "photographer", "region": "Jylland", "city": "Aarhus", "contact_email": "kontakt@lysoglaerke.example.com", "website": "https://lysoglaerke.example.com", "rating": 4.6 },
+    { "name": "Vestkyst Foto", "category": "photographer", "region": "Jylland", "city": "Esbjerg", "contact_email": "info@vestkystfoto.example.com", "website": "https://vestkystfoto.example.com", "rating": 4.4 },
+    { "name": "Nordlys Bryllupsfoto", "category": "photographer", "region": "Nordjylland", "city": "Aalborg", "contact_email": "book@nordlysfoto.example.com", "website": "https://nordlysfoto.example.com", "rating": 4.7 },
+    { "name": "Gammel Toldbod Selskabslokaler", "category": "venue", "region": "Sjælland", "city": "Helsingør", "contact_email": "selskab@gammeltoldbod.example.com", "website": "https://gammeltoldbod.example.com", "rating": 4.1 }
+  ]
+}
