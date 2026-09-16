@@ -12,6 +12,14 @@ export interface VendorCard {
   /** Kort dansk linje til kortet, fx "1.250 kr. pr. kuvert (ca. 100.000 kr. i alt)". */
   price_label: string;
   comparable_total: number | null;
+  /**
+   * Om prisen må vises som en oplysning fra leverandøren.
+   *
+   * Falsk når udtrækket ikke kunne bekræftes i mailen og et menneske ikke har
+   * læst det efter. Tallet findes stadig i `quote`, men det er agentens
+   * læsning, ikke leverandørens ord, og må ikke præsenteres som andet.
+   */
+  price_verified: boolean;
 }
 
 export interface Dashboard {
@@ -58,8 +66,16 @@ export async function getDashboard(weddingId: string): Promise<Dashboard> {
   }
 
   for (const list of Object.values(categories)) {
-    // Sortering: billigst sammenlignelige først, leverandører uden pris sidst.
+    // Sortering: bekræftede priser først og billigst øverst, derefter
+    // ubekræftede, og til sidst dem uden pris. Et ubekræftet tal må ikke
+    // vinde pladsen som "billigst" — så ville en fejllæsning blive det
+    // første parret ser.
     list.sort((a, b) => {
+      const rank = (c: VendorCard): number =>
+        c.comparable_total === null ? 2 : c.price_verified ? 0 : 1;
+      const ra = rank(a);
+      const rb = rank(b);
+      if (ra !== rb) return ra - rb;
       const av = a.comparable_total ?? Number.POSITIVE_INFINITY;
       const bv = b.comparable_total ?? Number.POSITIVE_INFINITY;
       return av - bv || a.vendor.name.localeCompare(b.vendor.name, "da");
@@ -152,6 +168,7 @@ function toCard(row: Record<string, unknown>, wedding: Wedding): VendorCard {
     last_activity: latest(stamp(row["t_last_inbound_at"]), stamp(row["t_last_outbound_at"])),
     price_label: priceLabel(quote, wedding),
     comparable_total: quote?.estimated_total_max ?? quote?.estimated_total_min ?? null,
+    price_verified: Boolean(quote) && !(quote!.needs_human_review && !quote!.human_reviewed_at),
   };
 }
 

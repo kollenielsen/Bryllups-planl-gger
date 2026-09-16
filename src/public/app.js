@@ -203,7 +203,7 @@ function renderReview(cards) {
           <div class="spacer"></div>
           <span class="muted">sikkerhed ${(c.quote.confidence_score * 100).toFixed(0)} %</span>
         </div>
-        <div class="price">${escapeHtml(c.price_label)}</div>
+        <div class="price unverified">Agenten læste: ${escapeHtml(c.price_label)}</div>
         <ul class="reasons">${c.quote.review_reasons.map((r) => `<li>${escapeHtml(r.split(": ").slice(1).join(": ") || r)}</li>`).join("")}</ul>
         <div class="row">
           <button class="ghost small" data-thread="${c.thread?.id ?? ""}" data-vendor="${escapeHtml(c.vendor.name)}">Læs mailen</button>
@@ -252,7 +252,22 @@ function renderVendorCard(c) {
     tentative: '<span class="pill warn">Option/forbehold</span>',
     unknown: '<span class="pill mute">Ledighed ukendt</span>',
   };
-  const availability = c.quote ? `<div>${AVAILABILITY[c.quote.availability] ?? ""}</div>` : "";
+  // "Dato ledig" må kun stå grønt, når ledigheden faktisk kunne bekræftes i
+  // leverandørens egen tekst. Ellers er det agentens læsning, ikke et tilsagn.
+  const availabilityPill =
+    c.quote?.availability === "available" && !c.quote.availability_confirmed
+      ? '<span class="pill warn">Ledig — ikke bekræftet</span>'
+      : (AVAILABILITY[c.quote?.availability] ?? "");
+  const availability = c.quote ? `<div>${availabilityPill}</div>` : "";
+
+  // Et ubekræftet tal vises aldrig i prislinjen som om leverandøren havde
+  // sagt det. Det står som agentens læsning, med opfordring til at læse selv.
+  const hasPrice = c.quote && (c.quote.price_min !== null || c.quote.price_max !== null);
+  const price =
+    hasPrice && !c.price_verified
+      ? `<div class="price unverified">Pris ikke bekræftet</div>
+         <div class="muted">Agenten læste <strong>${escapeHtml(c.price_label)}</strong> — det står ikke sådan i mailen. Læs den selv.</div>`
+      : `<div class="price">${escapeHtml(c.price_label)}</div>`;
 
   return `
     <div class="vendor ${flagged ? "flagged" : ""}">
@@ -261,7 +276,7 @@ function renderVendorCard(c) {
         <span class="pill ${tone}">${label}</span>
         ${c.thread ? `<span class="pill mute">${THREAD_LABEL[c.thread.state] ?? c.thread.state}</span>` : ""}
       </div>
-      <div class="price">${escapeHtml(c.price_label)}</div>
+      ${price}
       ${availability}
       ${c.quote?.conditions_text ? `<div class="muted">${escapeHtml(c.quote.conditions_text)}</div>` : ""}
       ${c.quote?.deposit_text ? `<div class="muted">Depositum: ${escapeHtml(c.quote.deposit_text)}</div>` : ""}
