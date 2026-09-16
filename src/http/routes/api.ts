@@ -15,7 +15,12 @@ import { excludeVendor, listVendors, setVendorStatus, upsertVendor } from "../..
 import { startOutreach } from "../../services/outreach.js";
 import { getDashboard } from "../../services/dashboard.js";
 import { buildBookingSummary } from "../../services/booking.js";
-import { markQuoteReviewed, quotesNeedingReview } from "../../services/quotes.js";
+import {
+  markQuoteReviewed,
+  quotesNeedingReview,
+  type QuoteOverrides,
+} from "../../services/quotes.js";
+import { AVAILABILITY, PRICE_BASIS } from "../../domain/schema.js";
 import {
   approveAllForWedding,
   approveOutboxItem,
@@ -182,12 +187,42 @@ api.get("/weddings/:id/review", wrap(async (req, res) => {
 
 api.post("/quotes/:id/review", wrap(async (req, res) => {
   const body = (req.body ?? {}) as Record<string, unknown>;
-  await markQuoteReviewed(String(req.params["id"]), {
-    price_min: body["price_min"] != null ? Number(body["price_min"]) : undefined,
-    price_max: body["price_max"] != null ? Number(body["price_max"]) : undefined,
-    availability: body["availability"] as never,
-    conditions_text: body["conditions_text"] as never,
-  });
+  const overrides: QuoteOverrides = {};
+
+  for (const key of ["price_min", "price_max"] as const) {
+    if (body[key] == null || body[key] === "") continue;
+    const n = Number(body[key]);
+    if (!Number.isFinite(n) || n < 0) {
+      res.status(400).json({ error: `${key} skal være et positivt tal.` });
+      return;
+    }
+    overrides[key] = Math.round(n);
+  }
+  if (body["price_basis"] != null) {
+    const v = String(body["price_basis"]);
+    if (!(PRICE_BASIS as readonly string[]).includes(v)) {
+      res.status(400).json({ error: `Ukendt prisgrundlag '${v}'.` });
+      return;
+    }
+    overrides.price_basis = v as QuoteOverrides["price_basis"];
+  }
+  if (body["availability"] != null) {
+    const v = String(body["availability"]);
+    if (!(AVAILABILITY as readonly string[]).includes(v)) {
+      res.status(400).json({ error: `Ukendt ledighedsværdi '${v}'.` });
+      return;
+    }
+    overrides.availability = v as QuoteOverrides["availability"];
+  }
+  if (body["conditions_text"] != null) overrides.conditions_text = String(body["conditions_text"]);
+
+  if (overrides.price_min != null && overrides.price_max != null
+      && overrides.price_min > overrides.price_max) {
+    res.status(400).json({ error: "price_min må ikke være større end price_max." });
+    return;
+  }
+
+  await markQuoteReviewed(String(req.params["id"]), overrides);
   res.json({ ok: true });
 }));
 

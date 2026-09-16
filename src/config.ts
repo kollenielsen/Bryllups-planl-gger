@@ -67,7 +67,8 @@ export const config = {
   },
 
   agent: {
-    // Over dette antal runder pr. tråd stopper agenten og beder mennesket tage over.
+    // Maks. mails agenten selv sender i én tråd, inkl. førstehenvendelsen.
+    // Derover stopper den og beder mennesket tage over.
     maxTurnsPerThread: int(process.env.MAX_TURNS_PER_THREAD, 6),
     // Under denne tærskel flages udtrækket til manuel læsning.
     confidenceThreshold: Number(process.env.CONFIDENCE_THRESHOLD ?? 0.7),

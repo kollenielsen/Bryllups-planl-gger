@@ -39,19 +39,27 @@ export async function findThreadByMessageIds(ids: string[]): Promise<Thread | nu
   return row;
 }
 
-/** Sidste fallback: afsenderadressen matcher en leverandør vi har skrevet til. */
+/**
+ * Sidste fallback: afsenderadressen matcher en leverandør vi har skrevet til.
+ *
+ * Kun hvis matchet er entydigt. Den samme leverandør kan være kontaktet for
+ * flere bryllupper, og et gæt ville lægge svaret i den forkerte tråd — og
+ * dermed svare med det forkerte pars oplysninger. Er der tvivl, returneres
+ * null, og mailen ender som uparret til manuel håndtering.
+ */
 export async function findThreadByVendorEmail(
   fromEmail: string | null,
 ): Promise<Thread | null> {
   if (!fromEmail) return null;
-  return one<Thread>(
+  const candidates = await many<Thread>(
     `SELECT t.* FROM threads t
      JOIN vendors v ON v.id = t.vendor_id
-     WHERE v.contact_email = $1
+     WHERE v.contact_email = $1 AND t.state <> 'closed'
      ORDER BY t.updated_at DESC
-     LIMIT 1`,
+     LIMIT 2`,
     [fromEmail.toLowerCase()],
   );
+  return candidates.length === 1 ? (candidates[0] ?? null) : null;
 }
 
 export async function setThreadState(

@@ -99,10 +99,15 @@ plus-adressering i `Reply-To` → `In-Reply-To`/`References` mod vores egne
 `Message-ID`'er → leverandørens afsenderadresse. Ingen af dem holder alene:
 plus-adressen overlever klienter der taber `References`, og
 `In-Reply-To` overlever leverandører der skriver til afsenderadressen.
+Sidste trin bruges kun hvis matchet er entydigt — den samme leverandør kan
+være kontaktet for flere bryllupper, og et gæt ville svare med det forkerte
+pars oplysninger. Er der tvivl, ender mailen som uparret.
 
 Beslutningen om, *hvorvidt* der skal svares, ligger i `decideNextStep()` —
-almindelig kode, ikke i modellen. Modellen skriver teksten. Efter
-`MAX_TURNS_PER_THREAD` runder stopper agenten og overlader tråden til parret.
+almindelig kode, ikke i modellen. Modellen skriver teksten. Loftet
+`MAX_TURNS_PER_THREAD` tælles på agentens egne mails i tråden, inklusive dem
+der stadig ligger i køen; derover stopper agenten og overlader tråden til
+parret.
 
 ### 3. Lav sikkerhed → menneske
 

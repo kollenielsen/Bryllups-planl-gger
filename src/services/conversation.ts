@@ -192,7 +192,7 @@ export async function handleInbound(email: InboundEmail): Promise<InboundResult>
     vendorQuestions: extraction.vendor_questions,
     availability: extraction.availability,
     hasPrice: extraction.price_min !== null || extraction.price_max !== null,
-    turnCount: thread.turn_count,
+    turnCount: await agentTurnCount(thread.id),
     maxTurns: config.agent.maxTurnsPerThread,
     needsHumanReview: grounding.needsHumanReview,
   });
@@ -215,6 +215,7 @@ export async function handleInbound(email: InboundEmail): Promise<InboundResult>
     inboundMessageId: email.messageId,
     inboundReferences: email.references,
     vendorQuestions: extraction.vendor_questions,
+    stateAfterQueue: decision.state,
   });
 
   return {
@@ -244,6 +245,28 @@ async function resolveThread(email: InboundEmail): Promise<Thread | null> {
   return findThreadByVendorEmail(email.fromEmail);
 }
 
+/**
+ * Hvor mange mails agenten har sendt i tråden — inklusive dem der stadig
+ * ligger i køen.
+ *
+ * Loftet tælles på agentens egne mails, ikke på alle beskeder: det er
+ * afsendelserne der koster leverandøren tid, og de endnu usendte skal tælle
+ * med, ellers kan flere svar i træk nå at lægge en ny opfølgning i kø hver,
+ * før køen overhovedet er tømt.
+ */
+export async function agentTurnCount(threadId: string): Promise<number> {
+  const row = await one<{ count: string | number }>(
+    `SELECT
+       (SELECT COUNT(*) FROM messages
+         WHERE thread_id = $1 AND direction = 'outbound')
+     + (SELECT COUNT(*) FROM outbox
+         WHERE thread_id = $1 AND status IN ('queued','needs_approval','sending'))
+       AS count`,
+    [threadId],
+  );
+  return Number(row?.count ?? 0);
+}
+
 export interface NextStep {
   reply: boolean;
   state: Thread["state"];
@@ -267,7 +290,7 @@ export function decideNextStep(input: {
     return {
       reply: false,
       state: "needs_human",
-      reason: `Tråden har kørt ${input.turnCount} runder. Agenten stopper og overlader den til parret.`,
+      reason: `Agenten har sendt ${input.turnCount} mails i tråden. Den stopper og overlader den til parret.`,
     };
   }
   if (input.intent === "not_interested" || input.intent === "unavailable") {
@@ -309,6 +332,12 @@ async function draftAndQueueFollowUp(input: {
   inboundReferences: string | null;
   vendorQuestions: string[];
   coupleInstruction?: string | null;
+  /**
+   * Trådtilstand når svaret er lagt i kø. Et afslag besvares med en høflig
+   * afslutning, og så er tråden slut — den må ikke stå og vente på en
+   * leverandør, der allerede har sagt nej.
+   */
+  stateAfterQueue?: Thread["state"];
 }): Promise<{ queuedBody: string | null; needsHuman: boolean; reason: string }> {
   const { wedding, vendor, thread } = input;
   const transcript = await buildTranscript(thread.id);
@@ -382,7 +411,7 @@ async function draftAndQueueFollowUp(input: {
     references: buildReferences(input.inboundReferences, input.inboundMessageId),
   });
 
-  await setThreadState(thread.id, "awaiting_vendor");
+  await setThreadState(thread.id, input.stateAfterQueue ?? "awaiting_vendor");
   return {
     queuedBody: body,
     needsHuman: false,
