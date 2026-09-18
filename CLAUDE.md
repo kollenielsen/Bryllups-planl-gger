@@ -124,6 +124,18 @@ Uden `APP_PASSWORD` er appen åben lokalt, men **nægter at starte** med
 lukke op, er værre end ingen gate, fordi en glemt miljøvariabel så lægger alt
 åbent uden at nogen opdager det.
 
+## Deploy
+
+Render kører backend'en fra `Dockerfile` efter `render.yaml`; Supabase er
+databasen. Se README for trinene. To ting er værd at huske her:
+
+- **Ikke gratis-planen på Render.** En service, der lukker ned ved
+  inaktivitet, stopper outbox-worker'en, og køen takter mails over timer.
+  Det fejler ikke synligt — afsendelsen holder bare op.
+- **`tsx` er en runtime-afhængighed, ikke en dev-afhængighed.** `npm start`
+  er `tsx src/main.ts`, og `NODE_ENV=production npm ci` springer
+  devDependencies over. Flyttes den tilbage, starter appen ikke i produktion.
+
 ## Regler der ikke må regressere
 
 Hver af disse er en fejl, der har været der én gang, og som en test nu holder
@@ -151,6 +163,11 @@ fast. Ændrer du noget i nærheden, så læs testen først.
   besvares ud fra faktaarket, lander i `open_questions` til parret.
 - **SQL-kolonnenavne kommer aldrig fra en request-body.** `markQuoteReviewed()`
   bygger sin `SET`-liste fra en fast kolonneliste.
+- **Nye tabeller skal have RLS.** Supabase lægger `public` bag et HTTP-API og
+  giver nye tabeller rettigheder til den offentlige `anon`-rolle automatisk.
+  `db/schema.sql` slår derfor Row Level Security til på alle tabeller uden
+  policies — RLS uden policies nægter alt, og appen rammes ikke, fordi den
+  forbinder som ejer. Glemmes linjen på en ny tabel, står den åben.
 - **Adgangskoden må aldrig fejle åben.** Mangler `APP_PASSWORD` i produktion,
   skal appen nægte at starte — ikke lukke op. Sammenligningen af koden sker i
   konstant tid.

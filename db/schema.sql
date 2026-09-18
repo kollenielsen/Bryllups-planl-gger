@@ -189,3 +189,31 @@ CREATE TABLE IF NOT EXISTS inbound_dedup (
   fingerprint TEXT PRIMARY KEY,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- ---------------------------------------------------------------------------
+-- Row Level Security.
+--
+-- Er databasen en Supabase-instans, ligger `public` bag Data API'et, og nye
+-- tabeller får automatisk SELECT/INSERT/UPDATE/DELETE til rollerne `anon` og
+-- `authenticated`. Anon-nøglen er offentlig by design. Uden RLS ville parrets
+-- og leverandørernes navne, mailadresser, telefonnumre og hele mailtråde
+-- altså kunne læses — og skrives — af enhver, der kender projektets URL.
+--
+-- Der oprettes bevidst ingen policies. RLS uden policies nægter alt, og det
+-- er præcis, hvad vi vil: ingen skal nå disse tabeller gennem Data API'et.
+-- Appen selv rammes ikke. Den forbinder over DATABASE_URL som tabellernes
+-- ejer, og en ejer er ikke underlagt RLS, medmindre FORCE slås til.
+--
+-- Uden for Supabase er det et no-op med en omkostning på nul.
+-- ---------------------------------------------------------------------------
+ALTER TABLE weddings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE category_budgets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE threads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE quotes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE open_questions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE outbox ENABLE ROW LEVEL SECURITY;
+ALTER TABLE suppressions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inbound_dedup ENABLE ROW LEVEL SECURITY;

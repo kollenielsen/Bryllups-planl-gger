@@ -154,6 +154,42 @@ mails og holder resultatet op mod `tests/fixtures/expectations.json`. Kør
 den før og efter enhver ændring i `PARSE_SYSTEM` — det er den eneste måde
 at vide, om en promptændring hjalp.
 
+## Deploy: Render + Supabase
+
+Backend'en er en Express-server med en outbox-worker, der takter mails over
+timer (fire minutters mellemrum, kontortid, maks. seks i timen). Den skal køre
+som én vedvarende proces. `render.yaml` beskriver servicen; `Dockerfile` er
+byggeartefaktet.
+
+1. **Supabase.** Opret projektet, og hent forbindelsesstrengen under *Connect*.
+   Fejler den direkte streng med en netværksfejl, så tag session pooler-strengen
+   — den direkte vært er IPv6 på nyere projekter. Skemaet kører af sig selv ved
+   opstart; `migrate()` er idempotent.
+2. **Render.** Importér `render.yaml`, eller opret en web service manuelt med
+   samme indstillinger. Vælg **ikke** gratis-planen: den lukker ned ved
+   inaktivitet, og så holder worker'en op med at tikke, uden at noget fejler
+   synligt.
+3. **Miljøvariabler.** `DATABASE_URL`, `ANTHROPIC_API_KEY` og `BASE_URL` sættes
+   i dashboardet. `APP_PASSWORD` og `INBOUND_WEBHOOK_SECRET` genererer Render.
+   `NODE_ENV=production` er ikke valgfri — den er det, der gør adgangskoden
+   påkrævet.
+4. **`DRY_RUN` bliver stående på `true`**, indtil maildomænet er på plads.
+
+### Tabellerne er lukket for Supabases Data API
+
+Supabase lægger `public` bag et HTTP-API, og nye tabeller dér får automatisk
+rettigheder til rollerne `anon` og `authenticated`. Anon-nøglen er offentlig
+by design. Uden yderligere tiltag ville parrets og leverandørernes navne,
+mailadresser, telefonnumre og hele mailtråde altså kunne læses og skrives af
+enhver, der kender projektets URL.
+
+Derfor slår `db/schema.sql` Row Level Security til på alle elleve tabeller og
+opretter bevidst ingen policies: RLS uden policies nægter alt. Appen selv
+rammes ikke — den forbinder som tabellernes ejer, og en ejer er ikke underlagt
+RLS. Uden for Supabase er det et no-op.
+
+**Opretter du en ny tabel, skal den have samme linje.** Ellers står den åben.
+
 ## Klar til produktion — huskeliste
 
 1. **Maildomæne.** SPF, DKIM og DMARC på `EMAIL_REPLY_DOMAIN`. Uden dem
@@ -163,6 +199,7 @@ at vide, om en promptændring hjalp.
    Webhooken svarer 200 også ved fejl, så udbyderen ikke genleverer i
    ring — fejlen logges i `events`.
 3. **Database.** Sæt `DATABASE_URL` til Supabase eller anden Postgres.
+   Nye tabeller skal have RLS slået til — se ovenfor.
 4. **`ANTHROPIC_API_KEY`.**
 5. **`DRY_RUN=false`** — bevidst, som sidste skridt.
 6. **Leverandørliste.** Demolisten i `src/discovery/seed.json` er opdigtet
