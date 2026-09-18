@@ -126,28 +126,37 @@ lukke op, er værre end ingen gate, fordi en glemt miljøvariabel så lægger al
 
 ## Deploy
 
-Render kører backend'en fra `Dockerfile` efter `render.yaml`; Supabase er
-databasen. Se README for trinene.
+Alt kører på Render, i workspacet *Magnus Kolle*, region frankfurt:
 
-Supabase-projektet er `supabase-citrine-pebble`
-(`ubndlpawbcmpmoiidreo`, eu-central-1, Postgres 17). Skemaet er lagt ind, og
-alle elleve tabeller har RLS slået til. Bemærk to ting om det projekt:
+| | |
+| --- | --- |
+| Service | `bryllupsplanlaegger` · <https://bryllupsplanlaegger.onrender.com> |
+| Database | `bryllup-db` · Render Postgres 17 |
 
-- **Det deles med en anden app.** `public.profiler` og funktionen
-  `public.opret_profil()` hører ikke til her. Lad dem være.
-- **Organisationen er Vercel-provisioneret** (`vercel_icfg_…`). Ifølge
-  Supabases dokumentation kan projekter i sådan en organisation *kun*
-  oprettes via Vercels dashboard, og faktureringen løber over Vercel. Et nyt
-  projekt kan altså ikke oprettes herfra.
+Servicen bygger Dockerfilen fra repoets branch og auto-deployer ved push.
+Skemaet kører af sig selv ved opstart. Se README for miljøvariabler.
 
-To ting er værd at huske om driften:
+**Vi bruger ikke længere Supabase, og dermed heller ikke Vercel.** Supabase-
+projektet `supabase-citrine-pebble` lå i en Vercel-provisioneret organisation,
+hvor projekter kun kan oprettes gennem Vercels dashboard. Render leverer selv
+Postgres, så hele den binding er væk. Det, der stadig ligger på den Supabase-
+instans, tilhører en anden app (`profiler`) — ikke denne.
 
-- **Ikke gratis-planen på Render.** En service, der lukker ned ved
-  inaktivitet, stopper outbox-worker'en, og køen takter mails over timer.
-  Det fejler ikke synligt — afsendelsen holder bare op.
+Tre ting om driften:
+
+- **Gratis-databasen udløber efter 30 dage.** Renders API returnerer et
+  `expiresAt` ved oprettelsen. Med rigtige data skal den opgraderes inden da.
+- **En gratis web service lukker ned ved inaktivitet**, og så stopper
+  outbox-worker'en. Køen takter mails over timer, så det fejler ikke synligt
+  — afsendelsen holder bare op.
 - **`tsx` er en runtime-afhængighed, ikke en dev-afhængighed.** `npm start`
   er `tsx src/main.ts`, og `NODE_ENV=production npm ci` springer
   devDependencies over. Flyttes den tilbage, starter appen ikke i produktion.
+
+Servicen peger indtil videre på `claude/eloquent-bell-2u0836`, fordi
+default-branchen endnu ikke har adgangskoden. **Når PR #1 er merget, skal
+branchen skiftes til default** — ellers deployer den fra en branch, der før
+eller siden forsvinder.
 
 ## Regler der ikke må regressere
 
@@ -176,11 +185,13 @@ fast. Ændrer du noget i nærheden, så læs testen først.
   besvares ud fra faktaarket, lander i `open_questions` til parret.
 - **SQL-kolonnenavne kommer aldrig fra en request-body.** `markQuoteReviewed()`
   bygger sin `SET`-liste fra en fast kolonneliste.
-- **Nye tabeller skal have RLS.** Supabase lægger `public` bag et HTTP-API og
-  giver nye tabeller rettigheder til den offentlige `anon`-rolle automatisk.
-  `db/schema.sql` slår derfor Row Level Security til på alle tabeller uden
-  policies — RLS uden policies nægter alt, og appen rammes ikke, fordi den
-  forbinder som ejer. Glemmes linjen på en ny tabel, står den åben.
+- **Nye tabeller skal have RLS.** `db/schema.sql` slår Row Level Security til
+  på alle tabeller uden policies. På Render Postgres er det et no-op, men
+  linjerne bliver stående: peges `DATABASE_URL` nogensinde mod en Supabase-
+  instans, ligger `public` bag et HTTP-API, hvor nye tabeller automatisk får
+  rettigheder til den offentlige `anon`-rolle. Uden RLS ville parrets og
+  leverandørernes kontaktoplysninger og hele mailtråde stå åbne. Glemmes
+  linjen på en ny tabel, er den beskyttelse væk.
 - **Adgangskoden må aldrig fejle åben.** Mangler `APP_PASSWORD` i produktion,
   skal appen nægte at starte — ikke lukke op. Sammenligningen af koden sker i
   konstant tid.

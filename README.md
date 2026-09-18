@@ -154,41 +154,53 @@ mails og holder resultatet op mod `tests/fixtures/expectations.json`. Kør
 den før og efter enhver ændring i `PARSE_SYSTEM` — det er den eneste måde
 at vide, om en promptændring hjalp.
 
-## Deploy: Render + Supabase
+## Deploy: Render
 
 Backend'en er en Express-server med en outbox-worker, der takter mails over
 timer (fire minutters mellemrum, kontortid, maks. seks i timen). Den skal køre
-som én vedvarende proces. `render.yaml` beskriver servicen; `Dockerfile` er
-byggeartefaktet.
+som én vedvarende proces — derfor en almindelig server og ikke serverless.
 
-1. **Supabase.** Opret projektet, og hent forbindelsesstrengen under *Connect*.
-   Fejler den direkte streng med en netværksfejl, så tag session pooler-strengen
-   — den direkte vært er IPv6 på nyere projekter. Skemaet kører af sig selv ved
-   opstart; `migrate()` er idempotent.
-2. **Render.** Importér `render.yaml`, eller opret en web service manuelt med
-   samme indstillinger. Vælg **ikke** gratis-planen: den lukker ned ved
-   inaktivitet, og så holder worker'en op med at tikke, uden at noget fejler
-   synligt.
-3. **Miljøvariabler.** `DATABASE_URL`, `ANTHROPIC_API_KEY` og `BASE_URL` sættes
-   i dashboardet. `APP_PASSWORD` og `INBOUND_WEBHOOK_SECRET` genererer Render.
-   `NODE_ENV=production` er ikke valgfri — den er det, der gør adgangskoden
-   påkrævet.
-4. **`DRY_RUN` bliver stående på `true`**, indtil maildomænet er på plads.
+Databasen er Render Postgres. Appen taler ren SQL over `pg` og bruger hverken
+Supabase-klient, auth eller Data API, så der er intet at hente ved at lægge
+databasen et andet sted end servicen.
 
-### Tabellerne er lukket for Supabases Data API
+### Det kørende miljø
 
-Supabase lægger `public` bag et HTTP-API, og nye tabeller dér får automatisk
-rettigheder til rollerne `anon` og `authenticated`. Anon-nøglen er offentlig
-by design. Uden yderligere tiltag ville parrets og leverandørernes navne,
-mailadresser, telefonnumre og hele mailtråde altså kunne læses og skrives af
-enhver, der kender projektets URL.
+| | |
+| --- | --- |
+| Service | `bryllupsplanlaegger` · <https://bryllupsplanlaegger.onrender.com> |
+| Database | `bryllup-db` · Postgres 17, frankfurt |
+| Kilde | Dockerfilen, bygget fra repoets branch |
 
-Derfor slår `db/schema.sql` Row Level Security til på alle elleve tabeller og
-opretter bevidst ingen policies: RLS uden policies nægter alt. Appen selv
-rammes ikke — den forbinder som tabellernes ejer, og en ejer er ikke underlagt
-RLS. Uden for Supabase er det et no-op.
+Skemaet kører af sig selv ved opstart; `migrate()` er idempotent, så der er
+intet særskilt migrationstrin.
 
-**Opretter du en ny tabel, skal den have samme linje.** Ellers står den åben.
+### Miljøvariabler
+
+Sat: `NODE_ENV=production`, `APP_USER`, `DRY_RUN=true`, `PORT`, `BASE_URL`.
+
+Skal sættes i Renders dashboard, fordi de er hemmeligheder:
+
+- **`APP_PASSWORD`** — servicen nægter at starte uden. Det er med vilje; se
+  afsnittet om adgang nedenfor.
+- **`DATABASE_URL`** — tag *Internal Database URL* fra databasen i dashboardet.
+  Intern, fordi service og database ligger i samme region.
+- **`ANTHROPIC_API_KEY`** — uden den fejler udkast og udtræk, men appen kører.
+
+Slår forbindelsen til databasen fejl med en TLS-fejl, så sæt `DATABASE_SSL`
+eksplicit. Uden den gættes der ud fra værtsnavnet.
+
+### To ting koster penge, før det bliver rigtigt
+
+Begge dele kører i dag på gratis-planen, hvilket er passende så længe
+`DRY_RUN=true` og der ikke ligger rigtige par i databasen:
+
+1. **Gratis-databasen udløber efter 30 dage.** Det er ikke et gæt — Renders
+   API svarer med et `expiresAt`-felt ved oprettelsen. Med rigtige data skal
+   den opgraderes inden da.
+2. **En gratis web service lukker ned ved inaktivitet.** Så holder
+   outbox-worker'en op med at tikke, og køen takter mails over timer. Det
+   fejler ikke synligt — afsendelsen stopper bare.
 
 ## Klar til produktion — huskeliste
 
@@ -198,8 +210,7 @@ RLS. Uden for Supabase er det et no-op.
    Mailgun) på `POST /webhooks/inbound` og sæt `INBOUND_WEBHOOK_SECRET`.
    Webhooken svarer 200 også ved fejl, så udbyderen ikke genleverer i
    ring — fejlen logges i `events`.
-3. **Database.** Sæt `DATABASE_URL` til Supabase eller anden Postgres.
-   Nye tabeller skal have RLS slået til — se ovenfor.
+3. **Database.** `DATABASE_URL` mod Render Postgres eller anden Postgres.
 4. **`ANTHROPIC_API_KEY`.**
 5. **`DRY_RUN=false`** — bevidst, som sidste skridt.
 6. **Leverandørliste.** Demolisten i `src/discovery/seed.json` er opdigtet
