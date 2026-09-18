@@ -1,0 +1,52 @@
+# Lokal udvikling mod en rigtig Postgres i stedet for PGlite.
+#
+# PGlite (default, uden DATABASE_URL) er Postgres kompileret til WASM og kræver
+# ingen installation — god til at komme i gang og til test. Men produktionen
+# kører rigtig Postgres på Supabase, og pg-driveren i src/db/index.ts bliver
+# aldrig ramt af `npm test`. Denne compose-fil lukker det hul lokalt.
+#
+#   docker compose up -d db          # kun databasen, appen kører med npm run dev
+#   docker compose up --build        # hele stakken i containere
+#   docker compose down -v           # slet også data
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: bryllup
+      POSTGRES_PASSWORD: bryllup
+      POSTGRES_DB: bryllup
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bryllup -d bryllup"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    # .env er valgfri — alt har defaults. Ligger den der, vinder den over
+    # environment nedenfor, undtagen DATABASE_URL som skal pege på containeren.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://bryllup:bryllup@db:5432/bryllup
+      # Containeren når ikke Postgres over TLS — den ligger på samme netværk.
+      DATABASE_SSL: "false"
+      PORT: "3000"
+      BASE_URL: http://localhost:3000
+      # Tør-kørsel er default i config.ts; her er den skrevet ud, så det er
+      # tydeligt at en compose-stak ikke sender mail.
+      DRY_RUN: "true"
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

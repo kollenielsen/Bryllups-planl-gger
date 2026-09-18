@@ -190,8 +190,18 @@ export async function processOutbox(now = new Date()): Promise<number> {
 
       const thread = await getThread(item.thread_id);
       if (thread) {
-        await setThreadState(thread.id, "awaiting_vendor");
-        await setVendorStatus(thread.vendor_id, "contacted", { via: item.kind });
+        // Kun førstehenvendelsen flytter leverandøren til 'contacted'. En
+        // opfølgning må ikke rulle status tilbage fra fx 'quoted' til
+        // 'contacted' — så ville sammenligningsvisningen vise et modtaget
+        // tilbud, som om der aldrig var kommet svar.
+        if (item.kind === "outreach") {
+          await setThreadState(thread.id, "awaiting_vendor");
+          await setVendorStatus(thread.vendor_id, "contacted", { via: item.kind });
+        } else if (thread.state !== "closed") {
+          // Samtaleløkken har allerede sat trådtilstanden; en lukket tråd
+          // (fx en høflig afslutning efter et afslag) forbliver lukket.
+          await setThreadState(thread.id, "awaiting_vendor");
+        }
       }
       await logEvent({
         weddingId: item.wedding_id,

@@ -43,6 +43,35 @@ const QUOTE_EXTRACTION = {
   summary_da: "Lokalet er ledigt med forbehold og koster 1.250 kr. pr. kuvert.",
 };
 
+const UNAVAILABLE_EXTRACTION = {
+  reply_intent: "unavailable",
+  price_min: null,
+  price_max: null,
+  currency: null,
+  price_basis: "unknown",
+  price_includes_vat: null,
+  price_quote: null,
+  availability: "unavailable",
+  availability_quote: "den 12. juni 2026 allerede booket hos os",
+  capacity_max: null,
+  conditions_text: null,
+  deposit_text: null,
+  valid_until: null,
+  vendor_questions: [],
+  confidence: 0.95,
+  uncertainty_notes: null,
+  summary_da: "Datoen er optaget.",
+};
+
+const CLOSING_FOLLOWUP = {
+  should_reply: true,
+  body_da: "Tak for det hurtige svar — så leder vi videre. Held og lykke med sæsonen.",
+  answered_questions: [],
+  unanswerable_questions: [],
+  needs_human: false,
+  needs_human_reason: null,
+};
+
 const FOLLOWUP = {
   should_reply: true,
   body_da: "Tak for det hurtige svar. Vi kommer fra kirken og forventer at ankomme ca. kl. 16.",
@@ -282,6 +311,96 @@ describe("indgående svar", () => {
     );
     expect(result.outcome).toBe("parsed");
     expect(result.threadId).toBe(thread.id);
+  });
+});
+
+describe("tilstand efter afsendelse", () => {
+  it("ruller ikke leverandørens status tilbage når en opfølgning sendes", async () => {
+    scripted();
+    const { wedding, vendor, thread } = await setupWedding();
+    await startOutreach({ weddingId: wedding.id, category: "venue" });
+    await processOutbox();
+
+    await handleInbound(inbound(thread, fixture("venue-quote-per-guest.txt")));
+    expect((await getVendor(vendor.id))?.status).toBe("quoted");
+
+    // Opfølgningen ligger i køen. Når den sendes, er leverandøren stadig en
+    // der har givet tilbud — ikke en vi lige har skrevet til første gang.
+    expect(await processOutbox()).toBe(1);
+    expect((await getVendor(vendor.id))?.status).toBe("quoted");
+  });
+
+  it("lukker tråden efter den afsluttende mail på et afslag", async () => {
+    scripted({
+      parse_reply: [UNAVAILABLE_EXTRACTION],
+      followup: [CLOSING_FOLLOWUP],
+    });
+    const { wedding, vendor, thread } = await setupWedding();
+    await startOutreach({ weddingId: wedding.id, category: "venue" });
+    await processOutbox();
+
+    await handleInbound(inbound(thread, fixture("venue-unavailable.txt")));
+    expect((await one<Thread>(`SELECT * FROM threads WHERE id = $1`, [thread.id]))?.state).toBe(
+      "closed",
+    );
+
+    // Afsendelsen af den afsluttende mail må ikke sætte tråden til at vente
+    // på en leverandør, der allerede har sagt nej.
+    expect(await processOutbox()).toBe(1);
+    expect((await one<Thread>(`SELECT * FROM threads WHERE id = $1`, [thread.id]))?.state).toBe(
+      "closed",
+    );
+    expect((await getVendor(vendor.id))?.status).toBe("rejected");
+  });
+
+  it("tæller mails der stadig ligger i køen med i rundeloftet", async () => {
+    scripted();
+    config.agent.maxTurnsPerThread = 1;
+    const { wedding, thread } = await setupWedding();
+    // Førstehenvendelsen er lagt i kø, men ikke sendt endnu. Den tæller med,
+    // ellers kan agenten nå at lægge en opfølgning i kø oven i den.
+    await startOutreach({ weddingId: wedding.id, category: "venue" });
+
+    const result = await handleInbound(inbound(thread, fixture("venue-quote-per-guest.txt")));
+    expect(result.needsHuman).toBe(true);
+    const outbox = await listOutbox(wedding.id);
+    expect(outbox.filter((o) => o.kind === "followup")).toHaveLength(0);
+  });
+});
+
+describe("trådmatchning", () => {
+  it("gætter ikke når den samme adresse er brugt til flere bryllupper", async () => {
+    scripted();
+    const first = await setupWedding();
+    const second = await createWedding({
+      couple_names: "Ida og Peter",
+      contact_email: "ida@example.dk",
+      wedding_date: "2026-08-01",
+      region: "Sjælland",
+      guest_count_min: 40,
+      guest_count_max: 50,
+      budget_min: null,
+      budget_max: null,
+      style_tags: [],
+      must_haves: [],
+    });
+    const sameVendor = await upsertVendor({
+      wedding_id: second.id,
+      name: "Søgaard Gods",
+      category: "venue",
+      contact_email: "anne@soegaard-gods.example.com",
+      source: "demo",
+    });
+    await getOrCreateThread(sameVendor, "Forespørgsel 1. august 2026");
+
+    // Uden token og uden In-Reply-To er afsenderadressen tvetydig: to åbne
+    // tråde matcher. Så skal mailen til manuel håndtering, ikke i en tilfældig.
+    const result = await handleInbound(
+      inbound(first.thread, fixture("venue-quote-per-guest.txt"), {
+        toEmails: ["bryllup@example.com"],
+      }),
+    );
+    expect(result.outcome).toBe("unmatched");
   });
 });
 

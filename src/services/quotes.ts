@@ -77,17 +77,31 @@ export async function quotesNeedingReview(weddingId: string): Promise<Quote[]> {
   );
 }
 
+/** Kolonner et menneske må rette i et udtræk. Kun disse navne når SQL'en. */
+const EDITABLE_QUOTE_COLUMNS = [
+  "price_min",
+  "price_max",
+  "price_basis",
+  "availability",
+  "conditions_text",
+] as const;
+
+export type QuoteOverrides = Partial<Pick<Quote, (typeof EDITABLE_QUOTE_COLUMNS)[number]>>;
+
 /** Menneskets læsning gør udtrækket gyldigt — den kan ikke sættes af agenten. */
 export async function markQuoteReviewed(
   quoteId: string,
-  overrides: Partial<Pick<Quote, "price_min" | "price_max" | "price_basis" | "availability" | "conditions_text">> = {},
+  overrides: QuoteOverrides = {},
 ): Promise<void> {
   const sets: string[] = ["needs_human_review = FALSE", "human_reviewed_at = now()"];
   const params: unknown[] = [quoteId];
-  for (const [key, value] of Object.entries(overrides)) {
+  // Kolonnenavnet interpoleres ind i SQL'en, så det læses fra listen ovenfor
+  // og aldrig fra kaldernes nøgler.
+  for (const column of EDITABLE_QUOTE_COLUMNS) {
+    const value = overrides[column];
     if (value === undefined) continue;
     params.push(value);
-    sets.push(`${key} = $${params.length}`);
+    sets.push(`${column} = $${params.length}`);
   }
   await exec(`UPDATE quotes SET ${sets.join(", ")} WHERE id = $1`, params);
 }

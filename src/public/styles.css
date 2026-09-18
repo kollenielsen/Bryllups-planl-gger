@@ -181,3 +181,10 @@ th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: upp
   .pill.bad { background: #372222; }
   .pill.mute { background: #2a2630; }
 }
+
+/* Et tal agenten ikke kunne bekræfte i leverandørens mail. Det skal kunne
+   ses på afstand, at linjen ikke er en pris, leverandøren har givet. */
+.price.unverified {
+  color: var(--bad, #a2342d);
+  font-weight: 600;
+}

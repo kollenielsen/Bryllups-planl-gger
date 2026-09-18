@@ -1,0 +1,1471 @@
+<title>Bryllupsagenten</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+
+<style>
+  :root {
+    --ground: #f6f7f4;
+    --surface: #ffffff;
+    --surface-2: #eff1ec;
+    --ink: #1a201c;
+    --muted: #6c756f;
+    --line: #dce0da;
+    --line-strong: #c3cabf;
+    --accent: #2e5b4e;
+    --accent-ink: #ffffff;
+    --accent-soft: #e4ede8;
+    --ok: #2f6b4f;
+    --ok-soft: #e2efe6;
+    --warn: #9a5a22;
+    --warn-soft: #f6ebdd;
+    --bad: #8c3a34;
+    --bad-soft: #f7e6e4;
+    --focus: #2e5b4e;
+    --shadow: 0 1px 2px rgba(26, 32, 28, .06), 0 10px 30px -20px rgba(26, 32, 28, .5);
+    --sans: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "Source Serif 4", ui-serif, Georgia, "Times New Roman", serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #121715; --surface: #1a211e; --surface-2: #212926;
+      --ink: #e7ebe6; --muted: #97a19b; --line: #2b332f; --line-strong: #3d4742;
+      --accent: #6fb49c; --accent-ink: #0e1412; --accent-soft: #1e2c27;
+      --ok: #7fc3a2; --ok-soft: #1b2a23; --warn: #d9a066; --warn-soft: #2d2419;
+      --bad: #d98078; --bad-soft: #2e1e1c; --focus: #8fd0b8;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #121715; --surface: #1a211e; --surface-2: #212926;
+    --ink: #e7ebe6; --muted: #97a19b; --line: #2b332f; --line-strong: #3d4742;
+    --accent: #6fb49c; --accent-ink: #0e1412; --accent-soft: #1e2c27;
+    --ok: #7fc3a2; --ok-soft: #1b2a23; --warn: #d9a066; --warn-soft: #2d2419;
+    --bad: #d98078; --bad-soft: #2e1e1c; --focus: #8fd0b8;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -20px rgba(0,0,0,.9);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.015em; }
+  p { margin: 0; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .topbar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 30;
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+  }
+  .topbar-in {
+    max-width: 1220px; margin: 0 auto; padding-block: 10px; padding-inline: 16px;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .wordmark { font-family: var(--serif); font-size: 19px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+  .wordmark span { color: var(--accent); }
+  .spacer { flex: 1 1 auto; }
+  .wedmeta { font-size: 12.5px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .wedmeta b { color: var(--ink); font-weight: 600; }
+
+  .wrap { max-width: 1220px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 72px; }
+
+  button {
+    cursor: pointer; border-radius: 7px; border: 1px solid var(--line-strong);
+    background: var(--surface); color: var(--ink); padding: 7px 12px;
+    font-size: 13.5px; font-weight: 500; transition: background .12s, border-color .12s, opacity .12s;
+  }
+  button:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted); }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  button.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 85%, var(--ink)); border-color: transparent; }
+  button.ghost { background: transparent; border-color: transparent; color: var(--muted); padding: 5px 8px; }
+  button.ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); }
+  button.big { padding: 11px 20px; font-size: 15px; border-radius: 9px; }
+  button.tiny { padding: 4px 9px; font-size: 12.5px; }
+  .btnrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600;
+    letter-spacing: .02em; padding: 2.5px 8px; border-radius: 100px; white-space: nowrap;
+    background: var(--surface-2); color: var(--muted);
+  }
+  .chip.ok { background: var(--ok-soft); color: var(--ok); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.bad { background: var(--bad-soft); color: var(--bad); }
+  .chip.accent { background: var(--accent-soft); color: var(--accent); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+  .section { padding: 16px 18px; display: flex; flex-direction: column; gap: 11px; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .lede { color: var(--muted); font-size: 14.5px; max-width: 64ch; }
+  .divider { height: 1px; background: var(--line); border: 0; margin: 0; }
+
+  label.field { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+  input[type="text"], input[type="email"], input[type="date"], input[type="number"], textarea, select {
+    width: 100%; background: var(--surface); border: 1px solid var(--line-strong);
+    border-radius: 7px; padding: 8px 10px; font-size: 14px; color: var(--ink);
+  }
+  textarea { resize: vertical; line-height: 1.55; }
+  input::placeholder, textarea::placeholder { color: color-mix(in srgb, var(--muted) 72%, transparent); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+
+  .kick { max-width: 720px; margin: 24px auto 0; display: flex; flex-direction: column; gap: 16px; }
+  .kick h1 { font-family: var(--serif); font-size: clamp(26px, 5vw, 34px); line-height: 1.15; }
+  .big-input { padding: 18px; display: flex; flex-direction: column; gap: 12px; }
+  .big-input textarea { font-family: var(--serif); font-size: 16px; min-height: 130px; }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; }
+  .examples button { font-size: 12.5px; padding: 5px 10px; border-radius: 100px; color: var(--muted); }
+
+  .stepline { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .stepline div { display: flex; gap: 7px; align-items: baseline; }
+  .stepnum {
+    font-variant-numeric: tabular-nums; font-weight: 700; font-size: 11px; color: var(--accent);
+    background: var(--accent-soft); border-radius: 100px; padding: 1px 7px; flex: none;
+  }
+
+  .briefgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px 18px; }
+  .bcell dt { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .bcell dd { margin: 2px 0 0; font-size: 15px; font-weight: 600; }
+
+  .splitrow { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
+  .splitbar { flex: 1 1 auto; height: 7px; border-radius: 100px; background: var(--surface-2); overflow: hidden; min-width: 50px; }
+  .splitbar i { display: block; height: 100%; background: var(--accent); border-radius: 100px; }
+  .splitname { width: 92px; flex: none; font-weight: 600; }
+  .splitamt { flex: none; color: var(--muted); }
+
+  .inlinelist { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tag { font-size: 12px; padding: 2px 9px; border-radius: 100px; background: var(--surface-2); color: var(--muted); }
+
+  .cands { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 10px; }
+  .cand {
+    text-align: left; display: flex; flex-direction: column; gap: 6px; align-items: flex-start;
+    padding: 12px 13px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--surface); font-weight: 400; position: relative;
+  }
+  .cand:hover { border-color: var(--line-strong); }
+  .cand[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .cand .cname { font-weight: 600; font-size: 14.5px; padding-right: 24px; }
+  .cand .cwhy { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+  .tick {
+    position: absolute; top: 11px; right: 11px; width: 17px; height: 17px; border-radius: 5px;
+    border: 1.5px solid var(--line-strong); display: grid; place-items: center;
+    font-size: 11px; color: transparent;
+  }
+  .cand[aria-pressed="true"] .tick { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  .actionbar {
+    position: sticky; bottom: 0; z-index: 25; margin-top: 12px;
+    background: color-mix(in srgb, var(--ground) 94%, transparent); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+    padding-block: 11px; padding-bottom: calc(11px + env(safe-area-inset-bottom, 0px));
+    display: flex; gap: 11px; align-items: center; flex-wrap: wrap;
+  }
+
+  .work { display: grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .work { grid-template-columns: 1fr; } }
+  .rail { display: flex; flex-direction: column; gap: 12px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 62px); }
+  @media (max-width: 900px) { .rail { position: static; } }
+
+  .catgroup + .catgroup { margin-top: 13px; }
+  .catlabel { display: flex; align-items: baseline; gap: 7px; padding: 0 2px 6px; }
+  .vlist { display: flex; flex-direction: column; gap: 6px; }
+
+  .vrow {
+    display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; text-align: left; width: 100%;
+    padding: 9px 11px; border-radius: 9px; border: 1px solid var(--line);
+    background: var(--surface); font-weight: 400;
+  }
+  .vrow:hover { border-color: var(--line-strong); }
+  .vrow[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .vrow .vname { font-weight: 600; font-size: 14px; }
+  .vrow .vprice { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); }
+  .vrow .vprice.unver { color: var(--warn); font-weight: 600; }
+  .vrow .vprice.ver { color: var(--ink); }
+
+  .empty { padding: 15px; border: 1px dashed var(--line-strong); border-radius: 10px; color: var(--muted); font-size: 13.5px; }
+
+  .detail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .dhead { padding: 16px 18px; display: flex; flex-direction: column; gap: 9px; }
+  .dhead h2 { font-size: 20px; font-family: var(--serif); }
+  .dsub { font-size: 12.5px; color: var(--muted); word-break: break-word; }
+
+  .letter { font-family: var(--serif); font-size: 14.5px; line-height: 1.62; white-space: pre-wrap; word-break: break-word; }
+  .msg { border-left: 2.5px solid var(--line-strong); padding: 2px 0 2px 13px; display: flex; flex-direction: column; gap: 5px; }
+  .msg.out { border-left-color: var(--accent); }
+  .msg.in { border-left-color: var(--ok); }
+  .msgmeta { font-size: 11.5px; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+  .thread { display: flex; flex-direction: column; gap: 15px; }
+
+  .quotegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 11px 16px; }
+  .qcell dt { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .qcell dd { margin: 1px 0 0; font-size: 14.5px; font-weight: 600; }
+  .headline { font-size: 21px; font-weight: 700; letter-spacing: -0.02em; }
+  .headline.unver { color: var(--warn); font-size: 17px; }
+  .reasons { margin: 0; padding-left: 17px; color: var(--bad); font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+
+  .callout { border-radius: 9px; padding: 11px 13px; font-size: 13.5px; display: flex; flex-direction: column; gap: 6px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.info { background: var(--accent-soft); color: var(--accent); }
+
+  .qitem { display: flex; flex-direction: column; gap: 6px; padding: 11px 0; border-top: 1px solid var(--line); }
+  .qitem:first-of-type { border-top: 0; padding-top: 2px; }
+
+  .banner {
+    display: flex; gap: 9px; align-items: flex-start; padding: 11px 14px; border-radius: 10px;
+    font-size: 13.5px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 13px;
+  }
+  .banner .k { font-weight: 700; }
+
+  .toast {
+    position: fixed; left: 50%; transform: translateX(-50%);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+    background: var(--ink); color: var(--ground); padding: 9px 16px; border-radius: 100px;
+    font-size: 13.5px; font-weight: 600; z-index: 60; box-shadow: var(--shadow); max-width: calc(100vw - 32px);
+  }
+
+  .thinking { color: var(--muted); font-size: 13.5px; display: flex; align-items: center; gap: 8px; }
+  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 1.1s ease-in-out infinite; flex: none; }
+  @keyframes pulse { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .pulse { animation: none; opacity: .7; } }
+
+  .backbtn { display: none; }
+  @media (max-width: 900px) {
+    .backbtn { display: inline-flex; }
+    body.picked .rail { display: none; }
+    body:not(.picked) .detail { display: none; }
+  }
+</style>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="wordmark">Bryllups<span>agenten</span></div>
+    <div class="wedmeta" id="wedmeta"></div>
+    <div class="spacer"></div>
+    <div class="btnrow" id="topactions"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banners"></div>
+  <section id="screen"></section>
+</main>
+
+<div id="toast" class="toast" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =====================================================================
+     Beløb og verifikation — portet uændret fra serverversionen.
+
+     Laget afgør, om et tal må vises som en oplysning fra leverandøren.
+     Modellen læser mailen, men er aldrig eneste kilde til et tal, parret
+     træffer beslutning på.
+     ===================================================================== */
+
+  var NBSP = / /g;
+
+  function normalizeNumber(raw) {
+    var n = Number(raw.replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", "."));
+    return isFinite(n) ? n : null;
+  }
+
+  var MULTIPLIERS = [
+    [/\bmio\.?\b|\bmillion(?:er)?\b/i, 1000000],
+    [/\bt\.?kr\.?\b|\btusind(?:e)?\b/i, 1000]
+  ];
+
+  function parseDanishAmount(input) {
+    if (!input) return null;
+    var s = input.replace(NBSP, " ").replace(/(?:dkk|kr\.?|kroner)/gi, " ").replace(/,-/g, " ").trim();
+    var m = /(\d[\d.\s]*(?:,\d{1,2})?)/.exec(s);
+    if (!m || !m[1]) return null;
+    var rest = s.slice(m.index + m[1].length);
+    var value = normalizeNumber(m[1]);
+    if (value === null) return null;
+    if (/^\s*k\b/i.test(rest)) { value *= 1000; }
+    else {
+      for (var i = 0; i < MULTIPLIERS.length; i++) {
+        if (MULTIPLIERS[i][0].test(rest.slice(0, 12))) { value *= MULTIPLIERS[i][1]; break; }
+      }
+    }
+    return Math.round(value);
+  }
+
+  var AMOUNT_TOKEN = /(?:kr\.?|dkk)\s*([\d][\d.\s]*(?:,\d{1,2})?)(?:\s*,-)?|([\d][\d.\s]*(?:,\d{1,2})?)\s*(?:,-|kr\.?|kroner|dkk|k\b|t\.?kr\.?|mio\.?)/gi;
+
+  function findAmounts(text) {
+    var out = [], src = String(text || "").replace(NBSP, " "), m;
+    AMOUNT_TOKEN.lastIndex = 0;
+    while ((m = AMOUNT_TOKEN.exec(src)) !== null) {
+      var numeric = m[1] || m[2];
+      if (!numeric) continue;
+      var tail = src.slice(m.index + m[0].length, m.index + m[0].length + 12);
+      var sfx = /(k|t\.?kr\.?|mio\.?)\s*$/i.exec(m[0].trim());
+      var parsed = parseDanishAmount(numeric + " " + (sfx ? sfx[1] : "") + " " + tail);
+      if (parsed !== null && parsed > 0) out.push(parsed);
+    }
+    return Array.from(new Set(out)).sort(function (a, b) { return a - b; });
+  }
+
+  function amountAppearsInText(amount, text) {
+    if (amount === null || amount === undefined) return true;
+    var found = findAmounts(text);
+    for (var i = 0; i < found.length; i++) if (Math.abs(found[i] - amount) <= 1) return true;
+    var stripped = String(text || "").replace(/[.\s]/g, function (c) { return c === "." ? "" : c; });
+    return new RegExp("(?:^|[^\\d.,])" + String(Math.round(amount)) + "(?![\\d.,])").test(stripped);
+  }
+
+  function normQuote(s) {
+    return String(s || "").toLowerCase().replace(NBSP, " ")
+      .replace(/[“”„"'`]/g, "").replace(/\s+/g, " ").trim();
+  }
+
+  function quoteIsGrounded(quote, source) {
+    var q = normQuote(quote), s = normQuote(source);
+    if (!q) return false;
+    if (s.indexOf(q) !== -1) return true;
+    var tokens = q.split(" ").filter(function (t) { return t.length >= 3; });
+    if (!tokens.length) return false;
+    var hits = tokens.filter(function (t) { return s.indexOf(t) !== -1; }).length;
+    return hits / tokens.length >= 0.8;
+  }
+
+  var PENALTY = { block: 0.35, warn: 0.1 };
+  var PLAUSIBLE = { min: 300, max: 2000000 };
+  var THRESHOLD = 0.7;
+  function clamp01(n) { return !isFinite(n) ? 0 : Math.min(1, Math.max(0, n)); }
+
+  function groundExtraction(x, sourceText) {
+    var reasons = [];
+    function add(sev, detail) { reasons.push({ severity: sev, detail: detail }); }
+    var hasPrice = x.price_min !== null || x.price_max !== null;
+
+    if (hasPrice) {
+      if (!x.price_quote || !quoteIsGrounded(x.price_quote, sourceText)) add("block", "Prisuddraget står ikke i leverandørens mail.");
+      if (!amountAppearsInText(x.price_min, sourceText)) add("block", "Beløbet " + x.price_min + " findes ikke i mailen.");
+      if (x.price_max !== x.price_min && !amountAppearsInText(x.price_max, sourceText)) add("block", "Beløbet " + x.price_max + " findes ikke i mailen.");
+      if (x.price_min !== null && x.price_max !== null && x.price_min > x.price_max) add("block", "Minimumsprisen er højere end maksimumsprisen.");
+      var seen = {};
+      [x.price_min, x.price_max].forEach(function (p) {
+        if (p === null || seen[p]) return;
+        seen[p] = 1;
+        if (p < PLAUSIBLE.min || p > PLAUSIBLE.max) add("block", "Beløbet " + p + " kr. ligger uden for et realistisk spænd.");
+      });
+      if (x.price_basis === "unknown") add("warn", "Uklart om prisen er samlet eller pr. kuvert/time.");
+      if (x.price_includes_vat === null) add("warn", "Uklart om prisen er inkl. eller ekskl. moms.");
+      if (x.currency && String(x.currency).toUpperCase() !== "DKK") add("warn", "Valuta angivet som " + x.currency + ".");
+    }
+
+    if (x.availability !== "unknown") {
+      if (!x.availability_quote || !quoteIsGrounded(x.availability_quote, sourceText)) {
+        add("block", "Udsagnet om ledighed kan ikke genfindes i mailen.");
+      }
+    }
+    if (x.reply_intent === "quote" && !hasPrice) add("warn", "Svaret er læst som tilbud, men uden pris.");
+    if (x.reply_intent === "unavailable" && x.availability === "available") add("block", "Modellen modsiger sig selv om ledighed.");
+    if (x.uncertainty_notes && String(x.uncertainty_notes).trim()) add("warn", String(x.uncertainty_notes).trim());
+    if (x.confidence < THRESHOLD) add("warn", "Modellens egen score var " + Number(x.confidence).toFixed(2) + ".");
+
+    var confidence = clamp01(Number(x.confidence));
+    reasons.forEach(function (r) { confidence -= PENALTY[r.severity]; });
+    confidence = clamp01(confidence);
+    var blocked = reasons.some(function (r) { return r.severity === "block"; });
+    return { confidence: confidence, needsHumanReview: blocked || confidence < THRESHOLD, reasons: reasons };
+  }
+
+  function estimateTotal(price, basis, guests) {
+    if (price === null || price === undefined) return null;
+    if (basis === "total" || basis === "from" || basis === "per_day") return price;
+    if (basis === "per_guest") return guests ? Math.round(price * guests) : null;
+    return null;
+  }
+
+  function formatDkk(a) {
+    if (a === null || a === undefined) return "–";
+    return Number(a).toLocaleString("da-DK") + " kr.";
+  }
+
+  var BASIS_DA = { total: "samlet", per_guest: "pr. kuvert", per_hour: "pr. time", per_day: "pr. dag", from: "startpris", unknown: "grundlag uoplyst" };
+
+  function priceLabel(q, w) {
+    if (!q || (q.price_min === null && q.price_max === null)) return "Ingen pris endnu";
+    var range = (q.price_min !== null && q.price_max !== null && q.price_min !== q.price_max)
+      ? formatDkk(q.price_min) + " – " + formatDkk(q.price_max)
+      : formatDkk(q.price_max === null ? q.price_min : q.price_max);
+    var est = (q.price_basis === "per_guest" && q.estimated_total_max)
+      ? " (ca. " + formatDkk(q.estimated_total_max) + " ved " + w.guests_max + " gæster)" : "";
+    var vat = q.price_includes_vat === null ? " · moms uoplyst" : (q.price_includes_vat ? " · inkl. moms" : " · ekskl. moms");
+    return range + " " + (BASIS_DA[q.price_basis] || "") + est + vat;
+  }
+
+  function quoteVerified(q) { return !!q && !(q.needs_human_review && !q.reviewed_at); }
+
+  /* =====================================================================
+     Tilstand
+     ===================================================================== */
+
+  var state = { wedding: null, vendors: [], selected: null, busy: null, ready: false, screen: "kick", editBrief: false };
+  var db = null, sample = null;
+  var picked = {};
+
+  var CATS = [{ id: "venue", label: "Lokaler" }, { id: "photographer", label: "Fotografer" }];
+  var CAT_DA = { venue: "bryllupslokale eller festlokale", photographer: "bryllupsfotograf" };
+  var CAT_LABEL = { venue: "Lokaler", photographer: "Fotografer", andet: "Alt andet" };
+
+  var STATUS = {
+    forslag:  ["Forslag", "accent"],
+    udkast:   ["Udkast klar", "accent"],
+    afventer: ["Afventer svar", ""],
+    svaret:   ["Har svaret", "ok"],
+    tilbud:   ["Tilbud modtaget", "ok"],
+    tjek:     ["Skal tjekkes", "warn"],
+    afslag:   ["Afslag", "bad"],
+    booket:   ["Booket", "ok"]
+  };
+
+  function uid(p) { return p + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  function esc(s) {
+    return String(s === null || s === undefined ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function byId(id) { return document.getElementById(id); }
+
+  function numOrNull(v) {
+    if (v === null || v === undefined || v === "") return null;
+    var n = Number(v);
+    return isFinite(n) ? n : null;
+  }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var el = byId("toast");
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.hidden = true; }, 3000);
+  }
+
+  function saveWedding(w) {
+    state.wedding = w;
+    if (db) return db.doc("wedding/current").set(w).catch(dbFail);
+    return Promise.resolve();
+  }
+
+  function saveVendor(v) {
+    v.updated_at = new Date().toISOString();
+    var i = state.vendors.findIndex(function (x) { return x.id === v.id; });
+    if (i === -1) state.vendors.push(v); else state.vendors[i] = v;
+    if (db) return db.doc("vendors/" + v.id).set(v).catch(dbFail);
+    return Promise.resolve();
+  }
+
+  /* Én skrivning ad gangen — samme dokument må ikke overlappes. */
+  function saveMany(list) {
+    return list.reduce(function (p, v) { return p.then(function () { return saveVendor(v); }); }, Promise.resolve());
+  }
+
+  function removeVendor(id) {
+    state.vendors = state.vendors.filter(function (v) { return v.id !== id; });
+    if (state.selected === id) state.selected = null;
+    if (db) return db.doc("vendors/" + id).delete().catch(dbFail);
+    return Promise.resolve();
+  }
+
+  function dbFail(e) {
+    var c = e && e.code;
+    if (c === "quota_exceeded") toast("Der er ikke plads til flere. Fjern nogle leverandører først.");
+    else if (c === "resource_exhausted") toast("For mange ændringer på én gang. Prøv igen om lidt.");
+    else toast("Kunne ikke gemme. Ændringen bliver kun her i fanen.");
+  }
+
+  /* =====================================================================
+     Agentens kald
+     ===================================================================== */
+
+  var AGENT_RULES =
+    "Du skriver på vegne af et par, der planlægger bryllup. Du er deres assistent i " +
+    "korrespondancen med leverandører.\n\nUfravigelige regler:\n" +
+    "- Du opfinder aldrig oplysninger om parret. Står det ikke i deres oplysninger, skriver du ikke om det.\n" +
+    "- Du lover intet, forhandler ikke og accepterer ikke tilbud.\n" +
+    "- Dansk, kort og høfligt, som et rigtigt menneske skriver en forespørgsel. Ingen salgssprog.\n" +
+    "- Underskrift tilføjes automatisk bagefter — skriv den ikke.";
+
+  function weddingFacts(w) {
+    var l = [
+      "Parret: " + (w.couple_names || "(navne ikke oplyst)"),
+      "Dato: " + (w.wedding_date || "ikke fastlagt") + (w.date_flexible ? " (fleksibel)" : ""),
+      "Område: " + w.region,
+      "Antal gæster: " + w.guests_min + "–" + w.guests_max
+    ];
+    if (w.budget_min || w.budget_max) l.push("Samlet budget: " + formatDkk(w.budget_min) + " – " + formatDkk(w.budget_max));
+    (w.budget_split || []).forEach(function (b) {
+      l.push("Afsat til " + String(CAT_LABEL[b.category] || b.category).toLowerCase() + ": " + formatDkk(b.amount_min) + " – " + formatDkk(b.amount_max));
+    });
+    if (w.style_tags && w.style_tags.length) l.push("Stil: " + w.style_tags.join(", "));
+    if (w.must_haves && w.must_haves.length) l.push("Skal-krav: " + w.must_haves.join(", "));
+    if (w.notes) l.push("Andet parret har oplyst: " + w.notes);
+    return l.join("\n");
+  }
+
+  function answeredQuestions() {
+    var out = [];
+    state.vendors.forEach(function (v) {
+      (v.questions || []).forEach(function (q) { if (q.a) out.push("Spørgsmål: " + q.q + "\nParrets svar: " + q.a); });
+    });
+    return out;
+  }
+
+  function setupPrompt(text) {
+    return "Et par beskriver deres bryllup med egne ord. Læg et oplæg, de kan sige ja til.\n\n" +
+      "PARRETS BESKRIVELSE:\n---\n" + String(text).slice(0, 4000) + "\n---\n\n" +
+      "Udfyld det, de har sagt. Det, de IKKE har sagt, må du give et fornuftigt forslag til — " +
+      "men skriv hvert gæt i assumptions, så de kan se, hvad der er deres eget, og hvad der er dit. " +
+      "Opfind ikke navne på parret: har de ikke nævnt dem, sæt couple_names til null.\n" +
+      "Datoformat YYYY-MM-DD. Er året ikke nævnt, vælg den førstkommende fremtidige forekomst " +
+      "(dags dato er " + new Date().toISOString().slice(0, 10) + "). Beløb i hele kroner som tal.\n" +
+      "budget_split: fordel det samlede budget på 'venue' og 'photographer' efter almindelige " +
+      "danske erfaringstal, og læg resten i 'andet'.\n\n" +
+      "Svar med kun dette JSON-objekt:\n" +
+      '{"couple_names":null,"wedding_date":"2027-06-12","date_flexible":false,"region":"Sjælland",' +
+      '"guests_min":60,"guests_max":90,"budget_min":150000,"budget_max":250000,' +
+      '"style_tags":["rustik"],"must_haves":["plads til 90 siddende"],"notes":null,' +
+      '"budget_split":[{"category":"venue","amount_min":90000,"amount_max":150000},' +
+      '{"category":"photographer","amount_min":15000,"amount_max":25000},' +
+      '{"category":"andet","amount_min":45000,"amount_max":75000}],' +
+      '"assumptions":["Jeg har regnet med 90 gæster, da I skrev omkring 80-90"],' +
+      '"plan_note":"to-tre sætninger om hvad de bør gå efter"}';
+  }
+
+  function candidatePrompt(w, cat, already) {
+    return "Foreslå konkrete, virkelige leverandører i Danmark inden for kategorien " +
+      CAT_DA[cat] + ", som kunne passe til dette bryllup.\n\n" + weddingFacts(w) +
+      (already.length ? "\n\nMedtag IKKE disse, de er allerede på listen: " + already.join(", ") : "") +
+      "\n\nVIGTIGT om hvad du må skrive:\n" +
+      "- Foreslå kun steder, du faktisk kender som eksisterende danske virksomheder.\n" +
+      "- Du har ikke adgang til internettet og kender ikke deres mailadresser. Opfind ALDRIG " +
+      "en mailadresse, et telefonnummer eller en pris — de felter findes ikke i svaret.\n" +
+      "- Er du usikker på, om stedet stadig findes eller holder bryllupper, sæt uncertain til true.\n" +
+      "- Hellere 5 steder du er sikker på, end 12 du har gættet dig til.\n\n" +
+      "Svar med kun et JSON-array:\n" +
+      '[{"name":"Stedets rigtige navn","city":"By","why":"én sætning om hvorfor det passer til netop dette bryllup","uncertain":false}]';
+  }
+
+  function batchOutreachPrompt(w, vendors, answered) {
+    return AGENT_RULES + "\n\nOPGAVE: Skriv den første henvendelse til hver af disse leverandører. " +
+      "Hver mail skal være skrevet til netop det sted — ikke samme tekst med nyt navn indsat.\n\n" +
+      "LEVERANDØRER:\n" + vendors.map(function (v, i) {
+        return (i + 1) + ". " + v.name + " (" + CAT_DA[v.category] + (v.city ? ", " + v.city : "") + ")";
+      }).join("\n") +
+      "\n\nPARRETS OPLYSNINGER (den eneste kilde du må bruge):\n" + weddingFacts(w) +
+      (answered.length ? "\n\nParret har tidligere svaret på:\n" + answered.join("\n") : "") +
+      "\n\nStil de spørgsmål, der afgør, om stedet er relevant: er datoen ledig, hvad koster det " +
+      "for dette antal gæster, er prisen samlet eller pr. kuvert, og hvad er inkluderet.\n\n" +
+      "Svar med kun et JSON-array med ét objekt pr. leverandør, i samme rækkefølge:\n" +
+      '[{"name":"Stedets navn","subject":"emnelinje","body_da":"brødtekst uden hilsen og underskrift"}]';
+  }
+
+  function parsePrompt(w, v, replyText) {
+    return "Du læser et svar fra en bryllupsleverandør og trækker de faktuelle oplysninger ud. " +
+      "Du gætter ALDRIG et tal. Kan du ikke finde noget i teksten, skriver du null.\n\n" +
+      "Leverandør: " + v.name + "\n" +
+      "Parrets dato: " + (w.wedding_date || "ikke fastlagt") + ", gæster: " + w.guests_min + "–" + w.guests_max + "\n\n" +
+      "LEVERANDØRENS SVAR:\n---\n" + String(replyText).slice(0, 12000) + "\n---\n\n" +
+      "price_quote og availability_quote skal være ORDRETTE uddrag klippet fra teksten ovenfor. " +
+      "De efterprøves mod teksten bagefter, og et uddrag, der ikke står der, sender hele udtrækket " +
+      "til manuel læsning hos parret.\n\n" +
+      "price_basis: total | per_guest | per_hour | per_day | from | unknown\n" +
+      "availability: available | unavailable | tentative | unknown\n" +
+      "reply_intent: quote | question | unavailable | referral | not_interested | acknowledgement | other\n\n" +
+      "Svar med kun dette JSON-objekt:\n" +
+      '{"reply_intent":"quote","price_min":1250,"price_max":1250,"currency":"DKK",' +
+      '"price_basis":"per_guest","price_includes_vat":true,"price_quote":"1.250 kr. pr. kuvert",' +
+      '"availability":"tentative","availability_quote":"datoen er ledig","capacity_max":null,' +
+      '"conditions_text":null,"deposit_text":null,"vendor_questions":[],"confidence":0.9,' +
+      '"uncertainty_notes":null,"summary_da":"kort dansk opsummering"}';
+  }
+
+  function followupPrompt(w, v, answered, instruction) {
+    var transcript = (v.messages || []).slice(-8).map(function (m) {
+      return (m.dir === "out" ? "VI SKREV:" : "LEVERANDØREN SKREV:") + "\n" + m.text;
+    }).join("\n\n");
+    return AGENT_RULES + "\n\nOPGAVE: Skriv det næste svar til " + v.name + " i denne tråd.\n\n" +
+      "PARRETS OPLYSNINGER (den eneste kilde du må bruge):\n" + weddingFacts(w) +
+      (answered.length ? "\n\nParret har tidligere svaret på:\n" + answered.join("\n") : "") +
+      "\n\nTRÅDEN INDTIL NU:\n" + transcript +
+      (instruction ? "\n\nPARRET BEDER DIG SÆRLIGT OM: " + instruction : "") +
+      "\n\nBesvar leverandørens spørgsmål ud fra parrets oplysninger. Et spørgsmål, du IKKE kan " +
+      "besvare med det, du har fået oplyst, må du ikke gætte på — det skal i unanswerable_questions, " +
+      "så parret selv kan svare.\n\nSvar med kun dette JSON-objekt:\n" +
+      '{"should_reply":true,"body_da":"svarets brødtekst","unanswerable_questions":[],' +
+      '"needs_human":false,"needs_human_reason":null}';
+  }
+
+  function signature(w, body) {
+    var name = w.couple_names ? String(w.couple_names).trim() : "";
+    return String(body).trim() + "\n\nMed venlig hilsen" + (name ? "\n" + name : "");
+  }
+
+  function sampleError(e) {
+    var c = e && e.code;
+    if (c === "cancelled") return null;
+    if (c === "not_granted" || c === "sampling_disabled" || c === "not_declared") return "Claude er ikke slået til for denne side, så agenten kan ikke arbejde her.";
+    if (c === "rate_limited") return "For mange forespørgsler lige nu. Vent et øjeblik og prøv igen.";
+    if (c === "session_expired") return "Du skal logge ind igen.";
+    if (c === "invalid_json") return "Svaret kunne ikke læses som data. Prøv igen.";
+    if (c === "refused") return "Claude ville ikke besvare det. Prøv at omformulere.";
+    if (c === "prompt_too_large") return "Teksten er for lang. Klip den ned.";
+    return "Noget gik galt undervejs. Prøv igen.";
+  }
+
+  /* =====================================================================
+     Handlinger
+     ===================================================================== */
+
+  function runSetup(text) {
+    if (!sample) { toast("Agenten kan ikke arbejde i denne visning."); return; }
+    state.busy = "setup"; render();
+    sample.json(setupPrompt(text), { modelTier: "default", cache: false })
+      .then(function (d) {
+        var gmin = Number(d.guests_min) || 50;
+        var gmax = Number(d.guests_max) || gmin;
+        var w = {
+          couple_names: d.couple_names ? String(d.couple_names) : null,
+          contact_email: null, contact_phone: null,
+          wedding_date: d.wedding_date ? String(d.wedding_date).slice(0, 10) : null,
+          date_flexible: !!d.date_flexible,
+          region: d.region ? String(d.region) : "Danmark",
+          guests_min: Math.min(gmin, gmax), guests_max: Math.max(gmin, gmax),
+          budget_min: numOrNull(d.budget_min), budget_max: numOrNull(d.budget_max),
+          style_tags: Array.isArray(d.style_tags) ? d.style_tags.map(String) : [],
+          must_haves: Array.isArray(d.must_haves) ? d.must_haves.map(String) : [],
+          notes: d.notes ? String(d.notes) : null,
+          budget_split: Array.isArray(d.budget_split) ? d.budget_split.map(function (b) {
+            return { category: String(b.category), amount_min: numOrNull(b.amount_min), amount_max: numOrNull(b.amount_max) };
+          }) : [],
+          assumptions: Array.isArray(d.assumptions) ? d.assumptions.map(String) : [],
+          plan_note: d.plan_note ? String(d.plan_note) : null
+        };
+        state.busy = null; state.screen = "brief";
+        return saveWedding(w);
+      })
+      .then(render)
+      .catch(function (e) { state.busy = null; var m = sampleError(e); if (m) toast(m); render(); });
+  }
+
+  function findCandidates(cat) {
+    if (!sample) return;
+    state.busy = "cand:" + cat; render();
+    var already = state.vendors.filter(function (v) { return v.category === cat; }).map(function (v) { return v.name; });
+    sample.json(candidatePrompt(state.wedding, cat, already), { modelTier: "default", cache: false })
+      .then(function (list) {
+        if (!Array.isArray(list)) throw { code: "invalid_json", message: "forventede et array" };
+        var made = list.slice(0, 12)
+          .filter(function (c) { return c && c.name; })
+          .map(function (c) {
+            return {
+              id: uid("v"), name: String(c.name), category: cat,
+              city: c.city ? String(c.city) : null,
+              why: c.why ? String(c.why) : null,
+              uncertain: !!c.uncertain,
+              email: null, origin: "forslag", status: "forslag",
+              messages: [], draft: null, quote: null, questions: [],
+              created_at: new Date().toISOString()
+            };
+          });
+        state.busy = null;
+        if (!made.length) toast("Agenten fandt ingen, den var sikker nok på. Prøv at justere oplægget.");
+        return saveMany(made);
+      })
+      .then(render)
+      .catch(function (e) { state.busy = null; var m = sampleError(e); if (m) toast(m); render(); });
+  }
+
+  function writeToPicked() {
+    var chosen = state.vendors.filter(function (v) { return picked[v.id]; });
+    if (!chosen.length) { toast("Vælg først, hvem der skal skrives til."); return; }
+    if (!sample) { toast("Agenten kan ikke skrive i denne visning."); return; }
+
+    state.busy = "batch"; render();
+    sample.json(batchOutreachPrompt(state.wedding, chosen, answeredQuestions()), { modelTier: "default", cache: false })
+      .then(function (list) {
+        if (!Array.isArray(list)) throw { code: "invalid_json", message: "forventede et array" };
+        var touched = [];
+        chosen.forEach(function (v, i) {
+          var hit = list.filter(function (m) { return m && m.name && normQuote(m.name) === normQuote(v.name); })[0] || list[i];
+          if (!hit || !hit.body_da) return;
+          v.draft = {
+            kind: "outreach",
+            subject: String(hit.subject || "Forespørgsel til " + v.name),
+            body: signature(state.wedding, hit.body_da)
+          };
+          v.status = "udkast";
+          touched.push(v);
+        });
+        picked = {};
+        state.busy = null;
+        state.screen = "work";
+        if (touched.length) state.selected = touched[0].id;
+        return saveMany(touched).then(function () {
+          if (!touched.length) toast("Agenten fik ikke skrevet nogen mails. Prøv igen.");
+          else toast(touched.length === 1 ? "Mailen er skrevet." : touched.length + " mails er skrevet.");
+        });
+      })
+      .then(render)
+      .catch(function (e) { state.busy = null; var m = sampleError(e); if (m) toast(m); render(); });
+  }
+
+  function draftFollowUp(v, instruction) {
+    if (!sample) return;
+    state.busy = "draft:" + v.id; render();
+    sample.json(followupPrompt(state.wedding, v, answeredQuestions(), instruction), { modelTier: "default", cache: false })
+      .then(function (d) {
+        var extra = Array.isArray(d.unanswerable_questions) ? d.unanswerable_questions : [];
+        v.questions = (v.questions || []).concat(extra.map(function (q) {
+          return { id: uid("q"), q: String(q), a: null, at: new Date().toISOString() };
+        }));
+        state.busy = null;
+        if (d.should_reply === false || d.needs_human) {
+          v.draft = null;
+          return saveVendor(v).then(function () {
+            toast(d.needs_human_reason ? String(d.needs_human_reason) : "Agenten mener, I selv skal tage den herfra.");
+          });
+        }
+        v.draft = { kind: "followup", subject: "SV: " + (v.lastSubject || "Forespørgsel"), body: signature(state.wedding, d.body_da || "") };
+        return saveVendor(v).then(function () {
+          if (extra.length) toast(extra.length + " spørgsmål er sendt videre til jer.");
+        });
+      })
+      .then(render)
+      .catch(function (e) { state.busy = null; var m = sampleError(e); if (m) toast(m); render(); });
+  }
+
+  function parseReply(v, replyText) {
+    if (!sample) return;
+    var clean = String(replyText).trim();
+    if (!clean) return;
+    state.busy = "parse:" + v.id; render();
+
+    sample.json(parsePrompt(state.wedding, v, clean), { modelTier: "default", cache: false })
+      .then(function (x) {
+        var norm = {
+          reply_intent: String(x.reply_intent || "other"),
+          price_min: numOrNull(x.price_min), price_max: numOrNull(x.price_max),
+          currency: x.currency || "DKK",
+          price_basis: BASIS_DA[x.price_basis] ? x.price_basis : "unknown",
+          price_includes_vat: typeof x.price_includes_vat === "boolean" ? x.price_includes_vat : null,
+          price_quote: x.price_quote || null,
+          availability: ["available", "unavailable", "tentative", "unknown"].indexOf(x.availability) !== -1 ? x.availability : "unknown",
+          availability_quote: x.availability_quote || null,
+          capacity_max: numOrNull(x.capacity_max),
+          conditions_text: x.conditions_text || null,
+          deposit_text: x.deposit_text || null,
+          confidence: typeof x.confidence === "number" ? x.confidence : 0.5,
+          uncertainty_notes: x.uncertainty_notes || null,
+          summary_da: x.summary_da || "",
+          vendor_questions: Array.isArray(x.vendor_questions) ? x.vendor_questions.map(String) : []
+        };
+        var g = groundExtraction(norm, clean);
+
+        v.messages = (v.messages || []).concat([{ dir: "in", text: clean, at: new Date().toISOString() }]);
+        v.quote = {
+          price_min: norm.price_min, price_max: norm.price_max, currency: norm.currency,
+          price_basis: norm.price_basis, price_includes_vat: norm.price_includes_vat,
+          estimated_total_min: estimateTotal(norm.price_min, norm.price_basis, state.wedding.guests_max),
+          estimated_total_max: estimateTotal(norm.price_max, norm.price_basis, state.wedding.guests_max),
+          availability: norm.availability,
+          /* Ledighed regnes kun som bekræftet, hvis udtrækket er funderet. */
+          availability_confirmed: norm.availability === "available" && !g.needsHumanReview,
+          capacity_max: norm.capacity_max, conditions_text: norm.conditions_text,
+          deposit_text: norm.deposit_text, summary: norm.summary_da,
+          confidence: g.confidence, needs_human_review: g.needsHumanReview, reasons: g.reasons,
+          reviewed_at: null, at: new Date().toISOString()
+        };
+        v.draft = null;
+        v.pendingVendorQuestions = norm.vendor_questions;
+
+        if (norm.reply_intent === "unavailable" || norm.reply_intent === "not_interested") v.status = "afslag";
+        else if (g.needsHumanReview) v.status = "tjek";
+        else if (norm.price_min !== null || norm.price_max !== null) v.status = "tilbud";
+        else v.status = "svaret";
+
+        state.busy = null;
+        return saveVendor(v);
+      })
+      .then(render)
+      .catch(function (e) { state.busy = null; var m = sampleError(e); if (m) toast(m); render(); });
+  }
+
+  function markSent(v) {
+    if (!v.draft) return;
+    v.messages = (v.messages || []).concat([{ dir: "out", text: v.draft.body, at: new Date().toISOString(), subject: v.draft.subject }]);
+    v.lastSubject = v.draft.subject;
+    v.draft = null;
+    v.status = "afventer";
+    saveVendor(v).then(render);
+  }
+
+  function copyText(text, what) {
+    var done = function () { toast(what + " kopieret."); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text, done); });
+    } else { fallbackCopy(text, done); }
+  }
+
+  function fallbackCopy(text, done) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); done(); } catch (e) { toast("Kunne ikke kopiere. Markér teksten selv."); }
+    document.body.removeChild(ta);
+  }
+
+  /* Booking skrives med skabelon, ikke af modellen: ved et skridt med
+     retsvirkning skal ordlyden være forudsigelig og til at efterprøve. */
+  function bookingSummary(v, w) {
+    var q = v.quote, open = [];
+    if (!q) open.push("Der er ikke registreret et tilbud fra leverandøren endnu.");
+    if (q && q.needs_human_review && !q.reviewed_at) open.push("Tilbuddet er ikke gennemlæst af jer endnu — tallene er ikke bekræftet.");
+    if (q && q.availability !== "available") open.push("Leverandøren har ikke skriftligt bekræftet, at datoen er ledig.");
+    if (q && q.price_includes_vat === null) open.push("Det fremgår ikke, om prisen er inkl. eller ekskl. moms.");
+    if (q && q.price_basis === "unknown") open.push("Det fremgår ikke, om prisen er samlet eller pr. gæst/time.");
+    if (!q || !q.deposit_text) open.push("Depositum og betalingsbetingelser er ikke afklaret.");
+    if (!q || !q.conditions_text) open.push("Afbestillingsvilkår er ikke afklaret.");
+
+    var lines = [
+      "Kære " + v.name, "",
+      "Tak for jeres tilbud. Vi vil gerne gå videre med en booking til vores bryllup den " + (w.wedding_date || "(dato ikke fastlagt)") + ".",
+      "", "Som vi har forstået det:",
+      "- Pris: " + (q ? priceLabel(q, w) : "ikke oplyst"),
+      "- Antal gæster: " + w.guests_min + "–" + w.guests_max
+    ];
+    if (q && q.conditions_text) lines.push("- Betingelser: " + q.conditions_text);
+    if (q && q.deposit_text) lines.push("- Depositum: " + q.deposit_text);
+    lines.push("", "Vil I bekræfte, at det er korrekt, og sende en kontrakt samt oplysninger om depositum?", "", "Med venlig hilsen");
+    if (w.couple_names) lines.push(w.couple_names);
+    if (w.contact_phone) lines.push("Tlf. " + w.contact_phone);
+    if (w.contact_email) lines.push(w.contact_email);
+    return { open: open, body: lines.join("\n") };
+  }
+
+  /* =====================================================================
+     Render
+     ===================================================================== */
+
+  function render() {
+    renderTop();
+    renderBanners();
+    var host = byId("screen");
+    if (!state.wedding) {
+      host.innerHTML = kickHtml();
+      wireKick();
+      document.body.classList.remove("picked");
+      return;
+    }
+    if (state.screen === "brief") {
+      host.innerHTML = briefHtml();
+      wireBrief();
+      document.body.classList.remove("picked");
+      return;
+    }
+    host.innerHTML = '<div class="work"><aside class="rail" id="rail"></aside><section class="detail" id="detail"></section></div>';
+    renderRail();
+    renderDetail();
+    document.body.classList.toggle("picked", !!state.selected);
+  }
+
+  function renderTop() {
+    var w = state.wedding;
+    var show = w && state.screen !== "brief";
+    byId("wedmeta").innerHTML = show
+      ? '<b>' + esc(w.couple_names || "Jeres bryllup") + '</b><span>' + esc(w.wedding_date || "dato ikke fastlagt") +
+        " · " + esc(w.region) + " · " + w.guests_min + "–" + w.guests_max + " gæster</span>"
+      : "";
+    byId("topactions").innerHTML = show ? '<button class="ghost tiny" id="toBrief">Oplægget</button>' : "";
+    if (byId("toBrief")) byId("toBrief").onclick = function () { state.screen = "brief"; state.selected = null; render(); };
+  }
+
+  function renderBanners() {
+    var out = "";
+    if (state.ready && !sample) {
+      out += '<div class="banner"><span class="k">Agenten kan ikke arbejde her.</span>' +
+        '<span>Siden må ikke bruge Claude i denne visning, så den kan hverken lægge oplæg eller skrive mails.</span></div>';
+    }
+    if (state.ready && !db) {
+      out += '<div class="banner"><span class="k">Gemmes ikke.</span>' +
+        '<span>Siden kan ikke gemme lige nu, så alt forsvinder, når fanen lukkes.</span></div>';
+    }
+    byId("banners").innerHTML = out;
+  }
+
+  /* ---------- Trin 1: parret fortæller, agenten sætter op ---------- */
+
+  var EXAMPLES = [
+    "Vi skal giftes til juni næste år på Sjælland. Omkring 80 gæster, og vi har cirka 200.000 at gøre godt med. Vi drømmer om noget rustikt med lange borde og vielse udenfor.",
+    "Bryllup i Nordjylland, sensommeren 2027. Vi bliver 40 i alt, det skal være hyggeligt frem for fint, og budgettet er stramt — højst 100.000.",
+    "Vi vil giftes på Fyn en lørdag i maj. 120 gæster, gerne et gods eller en herregård, og vi vil have en fotograf, der arbejder dokumentarisk."
+  ];
+
+  function kickHtml() {
+    var busy = state.busy === "setup";
+    return '<div class="kick">' +
+      '<h1>Fortæl kort om jeres bryllup.<br>Agenten lægger resten op.</h1>' +
+      '<p class="lede">Skriv det med jeres egne ord — hvornår, hvor, cirka hvor mange I bliver, og hvad I drømmer om. ' +
+      'Agenten sætter brylluppet op i grove træk, foreslår leverandører, og skriver mailene, når I har peget på dem.</p>' +
+      '<div class="panel big-input">' +
+      '<textarea id="kickText" placeholder="Vi skal giftes…"' + (busy ? " disabled" : "") + '></textarea>' +
+      '<div class="examples">' + EXAMPLES.map(function (e, i) {
+        return '<button data-ex="' + i + '"' + (busy ? " disabled" : "") + '>' + esc(e.slice(0, 40)) + '…</button>';
+      }).join("") + '</div>' +
+      '<div class="btnrow">' +
+      '<button class="primary big" id="kickGo"' + (busy || !sample ? " disabled" : "") + '>Sæt brylluppet op</button>' +
+      (busy ? '<span class="thinking"><span class="pulse"></span>Agenten lægger oplægget…</span>' : '') +
+      '</div></div>' +
+      '<hr class="divider">' +
+      '<div class="stepline">' +
+      '<div><span class="stepnum">1</span><span>Agenten sætter op og foreslår leverandører</span></div>' +
+      '<div><span class="stepnum">2</span><span>I peger på, hvem der skal skrives til</span></div>' +
+      '<div><span class="stepnum">3</span><span>Agenten skriver mailene og læser svarene</span></div>' +
+      '</div></div>';
+  }
+
+  function wireKick() {
+    var ta = byId("kickText");
+    if (!ta) return;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ex]"), function (b) {
+      b.onclick = function () { ta.value = EXAMPLES[Number(b.getAttribute("data-ex"))]; ta.focus(); };
+    });
+    byId("kickGo").onclick = function () {
+      var t = ta.value.trim();
+      if (t.length < 15) { toast("Skriv lidt mere — mindst hvornår eller hvor, og cirka hvor mange I bliver."); return; }
+      runSetup(t);
+    };
+  }
+
+  /* ---------- Trin 2: oplægget og forslagene ---------- */
+
+  function briefHtml() {
+    var w = state.wedding;
+    var nPicked = Object.keys(picked).filter(function (k) { return picked[k]; }).length;
+    var html = '<div style="display:flex;flex-direction:column;gap:14px;max-width:960px;margin:0 auto">';
+
+    html += '<div class="panel section">' +
+      '<div class="btnrow"><span class="eyebrow">Agentens oplæg</span><div class="spacer"></div>' +
+      '<button class="tiny" id="editBriefBtn">' + (state.editBrief ? "Gem" : "Ret") + '</button></div>';
+
+    if (state.editBrief) {
+      html += '<div class="grid2">' +
+        f("Jeres navne", "text", "bCouple", w.couple_names) +
+        f("Jeres mail", "email", "bEmail", w.contact_email) +
+        f("Telefon", "text", "bPhone", w.contact_phone) +
+        f("Dato", "date", "bDate", w.wedding_date) +
+        f("Område", "text", "bRegion", w.region) +
+        f("Gæster, mindst", "number", "bGmin", w.guests_min) +
+        f("Gæster, højst", "number", "bGmax", w.guests_max) +
+        f("Budget fra", "number", "bBmin", w.budget_min) +
+        f("Budget til", "number", "bBmax", w.budget_max) +
+        '</div>' +
+        '<label class="field">Stil<input type="text" id="bStyle" value="' + esc((w.style_tags || []).join(", ")) + '"></label>' +
+        '<label class="field">Skal-krav<input type="text" id="bMust" value="' + esc((w.must_haves || []).join(", ")) + '"></label>' +
+        '<label class="field">Andet agenten må nævne<textarea id="bNotes" rows="2">' + esc(w.notes || "") + '</textarea></label>';
+    } else {
+      html += '<dl class="briefgrid" style="margin:0">' +
+        cell("Parret", w.couple_names || "ikke oplyst") +
+        cell("Dato", (w.wedding_date || "ikke fastlagt") + (w.date_flexible ? " · fleksibel" : "")) +
+        cell("Område", w.region) +
+        cell("Gæster", w.guests_min + "–" + w.guests_max) +
+        cell("Budget", (w.budget_min || w.budget_max) ? formatDkk(w.budget_min) + " – " + formatDkk(w.budget_max) : "ikke oplyst") +
+        '</dl>';
+
+      if (w.style_tags && w.style_tags.length) {
+        html += '<div><div class="eyebrow" style="margin-bottom:5px">Stil</div><div class="inlinelist">' +
+          w.style_tags.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join("") + '</div></div>';
+      }
+      if (w.must_haves && w.must_haves.length) {
+        html += '<div><div class="eyebrow" style="margin-bottom:5px">Skal-krav</div><div class="inlinelist">' +
+          w.must_haves.map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join("") + '</div></div>';
+      }
+      if (w.budget_split && w.budget_split.length) {
+        var total = w.budget_max || w.budget_min || 0;
+        html += '<div><div class="eyebrow" style="margin-bottom:7px">Sådan foreslår agenten at fordele budgettet</div>' +
+          '<div style="display:flex;flex-direction:column;gap:7px">' +
+          w.budget_split.map(function (b) {
+            var pct = total ? Math.round(((b.amount_max || 0) / total) * 100) : 0;
+            return '<div class="splitrow"><span class="splitname">' + esc(CAT_LABEL[b.category] || b.category) + '</span>' +
+              '<span class="splitbar"><i style="width:' + Math.max(2, Math.min(100, pct)) + '%"></i></span>' +
+              '<span class="splitamt num">' + esc(formatDkk(b.amount_min) + " – " + formatDkk(b.amount_max)) + '</span></div>';
+          }).join("") + '</div></div>';
+      }
+      if (w.plan_note) html += '<p class="lede" style="font-family:var(--serif);font-size:15px">' + esc(w.plan_note) + '</p>';
+      if (w.assumptions && w.assumptions.length) {
+        html += '<div class="callout warn"><span><b>Det her har agenten gættet</b> — ret det, hvis det ikke passer.</span>' +
+          '<ul style="margin:0;padding-left:17px;display:flex;flex-direction:column;gap:2px">' +
+          w.assumptions.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ul></div>';
+      }
+    }
+    html += '</div>';
+
+    CATS.forEach(function (c) {
+      var all = state.vendors.filter(function (v) { return v.category === c.id; });
+      var suggestions = all.filter(function (v) { return v.status === "forslag"; });
+      var inFlight = all.length - suggestions.length;
+      var busy = state.busy === "cand:" + c.id;
+
+      html += '<div class="panel section">' +
+        '<div class="btnrow"><span class="eyebrow">' + esc(c.label) + '</span>' +
+        (inFlight ? '<span class="chip ok">' + inFlight + ' i gang</span>' : '') +
+        '<div class="spacer"></div>' +
+        '<button class="tiny" data-find="' + c.id + '"' + (busy || !sample ? " disabled" : "") + '>' +
+        (suggestions.length ? "Find flere" : "Find forslag") + '</button></div>';
+
+      if (busy) html += '<div class="thinking"><span class="pulse"></span>Agenten leder efter ' + esc(c.label.toLowerCase()) + '…</div>';
+
+      if (suggestions.length) {
+        html += '<div class="cands">' + suggestions.map(function (v) {
+          return '<button class="cand" data-toggle="' + esc(v.id) + '" aria-pressed="' + (picked[v.id] ? "true" : "false") + '">' +
+            '<span class="tick">✓</span>' +
+            '<span class="cname">' + esc(v.name) + '</span>' +
+            (v.city ? '<span class="chip">' + esc(v.city) + '</span>' : '') +
+            (v.why ? '<span class="cwhy">' + esc(v.why) + '</span>' : '') +
+            (v.uncertain ? '<span class="chip warn">Tjek at stedet findes</span>' : '') +
+            '</button>';
+        }).join("") + '</div>';
+      } else if (!busy) {
+        html += '<p class="lede">Ingen forslag endnu. Agenten foreslår steder ud fra oplægget ovenfor.</p>';
+      }
+      html += '</div>';
+    });
+
+    html += '<div class="callout info" style="font-size:13px"><span>Agenten har ikke adgang til internettet. ' +
+      'Forslagene er steder, den kender i forvejen — tjek at de findes og passer, før I skriver til dem. ' +
+      'Mailadressen står på deres hjemmeside og kan skrives ind, når mailen er klar.</span></div>';
+
+    html += '<div class="actionbar">' +
+      '<button class="primary big" id="writeBtn"' + (state.busy === "batch" || !nPicked ? " disabled" : "") + '>' +
+      (nPicked ? "Skriv til de " + nPicked + " valgte" : "Vælg hvem der skal skrives til") + '</button>' +
+      (state.busy === "batch" ? '<span class="thinking"><span class="pulse"></span>Agenten skriver ' + nPicked + ' mails…</span>' : '') +
+      '<div class="spacer"></div>' +
+      (state.vendors.some(function (v) { return v.status !== "forslag"; })
+        ? '<button id="goWork">Se korrespondancen</button>' : '') +
+      '</div>';
+
+    return html + '</div>';
+  }
+
+  function f(label, type, id, val) {
+    return '<label class="field">' + esc(label) + '<input type="' + type + '" id="' + id +
+      '" value="' + esc(val === null || val === undefined ? "" : val) + '"></label>';
+  }
+
+  function cell(k, v) {
+    return '<div class="bcell"><dt>' + esc(k) + '</dt><dd class="num">' + esc(v) + '</dd></div>';
+  }
+
+  function splitList(s) {
+    return String(s || "").split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+
+  function wireBrief() {
+    byId("editBriefBtn").onclick = function () {
+      if (!state.editBrief) { state.editBrief = true; render(); return; }
+      var w = state.wedding;
+      var gmin = Number(byId("bGmin").value) || w.guests_min;
+      var gmax = Number(byId("bGmax").value) || w.guests_max;
+      w.couple_names = byId("bCouple").value.trim() || null;
+      w.contact_email = byId("bEmail").value.trim() || null;
+      w.contact_phone = byId("bPhone").value.trim() || null;
+      w.wedding_date = byId("bDate").value || null;
+      w.region = byId("bRegion").value.trim() || w.region;
+      w.guests_min = Math.min(gmin, gmax);
+      w.guests_max = Math.max(gmin, gmax);
+      w.budget_min = numOrNull(byId("bBmin").value);
+      w.budget_max = numOrNull(byId("bBmax").value);
+      w.style_tags = splitList(byId("bStyle").value);
+      w.must_haves = splitList(byId("bMust").value);
+      w.notes = byId("bNotes").value.trim() || null;
+      state.editBrief = false;
+      saveWedding(w).then(render);
+    };
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-find]"), function (b) {
+      b.onclick = function () { findCandidates(b.getAttribute("data-find")); };
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll("[data-toggle]"), function (b) {
+      b.onclick = function () {
+        var id = b.getAttribute("data-toggle");
+        picked[id] = !picked[id];
+        render();
+      };
+    });
+
+    if (byId("writeBtn")) byId("writeBtn").onclick = writeToPicked;
+    if (byId("goWork")) byId("goWork").onclick = function () { state.screen = "work"; render(); };
+  }
+
+  /* ---------- Trin 3: korrespondancen ---------- */
+
+  function comparable(v) {
+    if (!v.quote) return null;
+    var m = v.quote.estimated_total_max;
+    return (m === null || m === undefined) ? v.quote.estimated_total_min : m;
+  }
+
+  function sortedActive(cat) {
+    function rank(v) {
+      var c = comparable(v);
+      if (c === null || c === undefined) return 2;
+      return quoteVerified(v.quote) ? 0 : 1;
+    }
+    return state.vendors
+      .filter(function (v) { return v.category === cat && v.status !== "forslag"; })
+      .sort(function (a, b) {
+        var ra = rank(a), rb = rank(b);
+        if (ra !== rb) return ra - rb;
+        var av = comparable(a), bv = comparable(b);
+        return (av === null ? Infinity : av) - (bv === null ? Infinity : bv) || a.name.localeCompare(b.name, "da");
+      });
+  }
+
+  function renderRail() {
+    var html = '<div class="panel" style="padding:14px">' +
+      '<div class="btnrow" style="padding-bottom:9px"><span class="eyebrow">Korrespondance</span>' +
+      '<div class="spacer"></div><button class="tiny" id="railBrief">Oplægget</button></div>';
+
+    var any = false;
+    CATS.forEach(function (c) {
+      var list = sortedActive(c.id);
+      if (!list.length) return;
+      any = true;
+      html += '<div class="catgroup"><div class="catlabel"><span class="eyebrow">' + esc(c.label) +
+        '</span><span class="chip">' + list.length + '</span></div><div class="vlist">';
+      list.forEach(function (v) {
+        var st = STATUS[v.status] || STATUS.udkast;
+        var ver = quoteVerified(v.quote);
+        var hasPrice = v.quote && (v.quote.price_min !== null || v.quote.price_max !== null);
+        var txt, cls;
+        if (!v.quote) { txt = v.draft ? "Udkast klar til at sende" : "Ingen pris endnu"; cls = ""; }
+        else if (hasPrice && !ver) { txt = "Pris ikke bekræftet"; cls = "unver"; }
+        else if (hasPrice) { txt = priceLabel(v.quote, state.wedding); cls = "ver"; }
+        else { txt = "Svar uden pris"; cls = ""; }
+        html += '<button class="vrow" data-open="' + esc(v.id) + '" aria-current="' + (state.selected === v.id ? "true" : "false") + '">' +
+          '<span class="vname">' + esc(v.name) + '</span>' +
+          '<span class="chip ' + st[1] + '">' + esc(st[0]) + '</span>' +
+          '<span class="vprice num ' + cls + '">' + esc(txt) + '</span></button>';
+      });
+      html += '</div></div>';
+    });
+
+    if (!any) html += '<div class="empty">Ingen mails endnu. Gå til oplægget og vælg, hvem agenten skal skrive til.</div>';
+    byId("rail").innerHTML = html + '</div>';
+
+    byId("railBrief").onclick = function () { state.screen = "brief"; state.selected = null; render(); };
+    Array.prototype.forEach.call(document.querySelectorAll("[data-open]"), function (b) {
+      b.onclick = function () {
+        state.selected = b.getAttribute("data-open");
+        render();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      };
+    });
+  }
+
+  function renderDetail() {
+    var host = byId("detail");
+    var v = state.vendors.filter(function (x) { return x.id === state.selected; })[0];
+
+    if (!v) {
+      host.innerHTML = '<div class="panel section"><span class="eyebrow">Sådan går det videre</span>' +
+        '<p class="lede">Vælg en leverandør til venstre. Agenten har skrevet mailen — <b>den sender ikke selv</b>, ' +
+        'for den kan ikke nå jeres mailkonto herfra. I kopierer og sender, og når svaret kommer, indsætter I det. ' +
+        'Så trækker agenten pris og ledighed ud og siger til, hvis tallene ikke kan bekræftes i ' +
+        'leverandørens egen tekst.</p></div>' + questionsHtml(null);
+      wireQuestions();
+      return;
+    }
+
+    var w = state.wedding;
+    var st = STATUS[v.status] || STATUS.udkast;
+    var busyDraft = state.busy === "draft:" + v.id;
+    var busyParse = state.busy === "parse:" + v.id;
+    var html = "";
+
+    html += '<div class="panel dhead">' +
+      '<div class="btnrow"><button class="ghost tiny backbtn" id="backBtn">← Alle</button>' +
+      '<span class="chip ' + st[1] + '"><span class="dot"></span>' + esc(st[0]) + '</span>' +
+      '<div class="spacer"></div><button class="ghost tiny" id="delVendor">Fjern</button></div>' +
+      '<h2>' + esc(v.name) + '</h2>' +
+      '<div class="dsub">' + esc(v.city || "") + ((v.messages || []).length ? (v.city ? " · " : "") + v.messages.length + " breve" : "") + '</div>' +
+      '<label class="field" style="max-width:340px">Mailadresse' +
+      '<input type="email" id="vEmail" value="' + esc(v.email || "") + '" placeholder="står på deres hjemmeside"></label></div>';
+
+    if (v.quote) html += quotePanel(v, w);
+
+    if (v.draft) {
+      html += '<div class="panel section">' +
+        '<div class="btnrow"><span class="eyebrow">' + (v.draft.kind === "outreach" ? "Udkast til henvendelse" : "Udkast til svar") + '</span>' +
+        '<div class="spacer"></div><span class="chip accent">Ikke sendt</span></div>' +
+        '<label class="field">Emne<input type="text" id="draftSubject" value="' + esc(v.draft.subject) + '"></label>' +
+        '<label class="field">Mailens tekst<textarea id="draftBody" rows="13" class="letter">' + esc(v.draft.body) + '</textarea></label>' +
+        '<div class="callout info"><span>Agenten sender ikke. Kopiér teksten, send den fra jeres egen mail, og markér den så som sendt.</span></div>' +
+        '<div class="btnrow"><button class="primary" id="copyDraft">Kopiér mail</button>' +
+        '<button id="sentDraft">Markér som sendt</button>' +
+        '<button class="ghost" id="dropDraft">Kassér</button></div></div>';
+    } else if ((v.messages || []).length) {
+      html += '<div class="panel section"><span class="eyebrow">Næste svar</span>' +
+        (sample
+          ? '<label class="field">Skal agenten spørge om noget bestemt?' +
+            '<input type="text" id="fuInstruction" placeholder="Fx: spørg om vi må have vores egen fotograf med."></label>' +
+            '<div class="btnrow"><button class="primary" id="mkDraft"' + (busyDraft ? " disabled" : "") + '>Skriv næste svar</button>' +
+            (busyDraft ? '<span class="thinking"><span class="pulse"></span>Agenten skriver…</span>' : '') + '</div>'
+          : '<p class="lede">Agenten kan ikke skrive i denne visning.</p>') + '</div>';
+    }
+
+    html += '<div class="panel section"><span class="eyebrow">Indsæt leverandørens svar</span>' +
+      '<textarea id="replyBox" rows="6" placeholder="Kopiér hele svaret ind her — også hvis det er rodet, med citeret historik og signatur."></textarea>' +
+      '<div class="btnrow">' +
+      (sample ? '<button class="primary" id="doParse"' + (busyParse ? " disabled" : "") + '>Læs svaret</button>' : '') +
+      '<button id="justSave">Gem uden at læse</button>' +
+      (busyParse ? '<span class="thinking"><span class="pulse"></span>Agenten læser svaret…</span>' : '') +
+      '</div></div>';
+
+    if ((v.messages || []).length) {
+      html += '<div class="panel section"><span class="eyebrow">Korrespondancen</span><div class="thread">';
+      v.messages.forEach(function (m) {
+        html += '<div class="msg ' + (m.dir === "out" ? "out" : "in") + '">' +
+          '<div class="msgmeta">' + (m.dir === "out" ? "I SKREV" : "LEVERANDØREN SKREV") + " · " + esc(fmtDate(m.at)) + '</div>' +
+          '<div class="letter">' + esc(m.text) + '</div></div>';
+      });
+      html += '</div></div>';
+    }
+
+    if (v.quote && v.status !== "afslag") html += bookingPanel(v, w);
+    html += questionsHtml(v);
+
+    host.innerHTML = html;
+    wireDetail(v);
+    wireQuestions();
+  }
+
+  function quotePanel(v, w) {
+    var q = v.quote;
+    var ver = quoteVerified(q);
+    var hasPrice = q.price_min !== null || q.price_max !== null;
+    var html = '<div class="panel section">' +
+      '<div class="btnrow"><span class="eyebrow">Hvad leverandøren har oplyst</span><div class="spacer"></div>' +
+      '<span class="chip ' + (ver ? "ok" : "warn") + '">' +
+      (ver ? "Bekræftet i mailen" : "Sikkerhed " + Math.round(q.confidence * 100) + " %") + '</span></div>';
+
+    if (hasPrice && !ver) {
+      html += '<div class="headline unver">Pris ikke bekræftet</div>' +
+        '<p style="font-size:13.5px;color:var(--muted)">Agenten læste <b class="num">' + esc(priceLabel(q, w)) +
+        '</b> — men det står ikke sådan i leverandørens mail. Læs den selv, før I regner med tallet.</p>';
+    } else if (hasPrice) {
+      html += '<div class="headline num">' + esc(priceLabel(q, w)) + '</div>';
+    } else {
+      html += '<div class="headline" style="color:var(--muted);font-size:17px">Svar uden pris</div>';
+    }
+
+    if (!ver && q.reasons && q.reasons.length) {
+      html += '<ul class="reasons">' + q.reasons.map(function (r) { return '<li>' + esc(r.detail) + '</li>'; }).join("") + '</ul>';
+    }
+
+    var cells = [];
+    var availTxt = q.availability === "available"
+      ? (q.availability_confirmed ? "Ledig" : "Ledig — ikke bekræftet")
+      : q.availability === "unavailable" ? "Optaget"
+      : q.availability === "tentative" ? "Option/forbehold" : "Ikke oplyst";
+    cells.push(["Datoen", availTxt]);
+    if (q.estimated_total_max && q.price_basis === "per_guest") cells.push(["Sammenligningstal", formatDkk(q.estimated_total_max)]);
+    if (q.capacity_max) cells.push(["Plads til", q.capacity_max + " gæster"]);
+    if (q.deposit_text) cells.push(["Depositum", q.deposit_text]);
+
+    html += '<dl class="quotegrid" style="margin:0">' + cells.map(function (c) {
+      return '<div class="qcell"><dt>' + esc(c[0]) + '</dt><dd class="num">' + esc(c[1]) + '</dd></div>';
+    }).join("") + '</dl>';
+
+    if (q.conditions_text) {
+      html += '<p style="font-size:13.5px;color:var(--muted)"><b>Betingelser:</b> ' + esc(q.conditions_text) + '</p>';
+    }
+
+    if (v.pendingVendorQuestions && v.pendingVendorQuestions.length) {
+      html += '<div><div class="eyebrow" style="margin-bottom:5px">Leverandøren spørger om</div>' +
+        '<ul style="margin:0;padding-left:17px;font-size:14px;font-family:var(--serif);display:flex;flex-direction:column;gap:3px">' +
+        v.pendingVendorQuestions.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></div>';
+    }
+
+    if (q.needs_human_review && !q.reviewed_at) {
+      html += '<div class="btnrow"><button id="markReviewed">Jeg har læst mailen — tallene passer</button></div>';
+    }
+    return html + '</div>';
+  }
+
+  function bookingPanel(v, w) {
+    var s = bookingSummary(v, w);
+    return '<details class="panel section" style="gap:0">' +
+      '<summary style="cursor:pointer;font-weight:600;font-size:14px">Gå videre med booking</summary>' +
+      '<div style="display:flex;flex-direction:column;gap:11px;padding-top:13px">' +
+      '<div class="callout warn"><span><b>Agenten booker ikke og indgår ingen aftale.</b> ' +
+      'Her er det, I skal bruge for selv at sige ja.</span></div>' +
+      (s.open.length ? '<div><div class="eyebrow" style="margin-bottom:5px">Uafklaret inden I siger ja</div>' +
+        '<ul class="reasons">' + s.open.map(function (o) { return '<li>' + esc(o) + '</li>'; }).join("") + '</ul></div>' : '') +
+      '<label class="field">Udkast til bekræftelse<textarea id="bookBody" rows="12" class="letter">' + esc(s.body) + '</textarea></label>' +
+      '<div class="btnrow"><button class="primary" id="copyBooking">Kopiér udkast</button>' +
+      '<button id="markBooked">Markér som booket</button></div></div></details>';
+  }
+
+  function questionsHtml(only) {
+    var items = [];
+    state.vendors.forEach(function (v) {
+      if (only && v.id !== only.id) return;
+      (v.questions || []).forEach(function (q) { if (!q.a) items.push({ v: v, q: q }); });
+    });
+    if (!items.length) return "";
+    return '<div class="panel section"><span class="eyebrow">Venter på jer</span>' +
+      '<p class="lede">Spørgsmål agenten ikke kunne besvare ud fra jeres oplysninger. Den gætter ikke.</p>' +
+      items.map(function (it) {
+        return '<div class="qitem"><div style="font-family:var(--serif);font-size:14.5px">' + esc(it.q.q) + '</div>' +
+          '<div style="font-size:12px;color:var(--muted)">' + esc(it.v.name) + '</div>' +
+          '<div class="btnrow"><input type="text" class="qans" data-v="' + esc(it.v.id) + '" data-q="' + esc(it.q.id) +
+          '" placeholder="Jeres svar" style="flex:1;min-width:150px">' +
+          '<button class="tiny qsave" data-v="' + esc(it.v.id) + '" data-q="' + esc(it.q.id) + '">Gem</button></div></div>';
+      }).join("") + '</div>';
+  }
+
+  function fmtDate(iso) {
+    try {
+      return new Date(iso).toLocaleString("da-DK", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    } catch (e) { return ""; }
+  }
+
+  function wireDetail(v) {
+    var g = byId;
+    if (g("backBtn")) g("backBtn").onclick = function () { state.selected = null; render(); };
+
+    if (g("delVendor")) g("delVendor").onclick = function () {
+      if (!window.confirm("Fjern " + v.name + " og hele korrespondancen?")) return;
+      removeVendor(v.id).then(render);
+    };
+
+    if (g("vEmail")) g("vEmail").onchange = function () {
+      v.email = g("vEmail").value.trim() || null;
+      saveVendor(v).then(function () { toast("Mailadresse gemt."); });
+    };
+
+    if (g("mkDraft")) g("mkDraft").onclick = function () {
+      draftFollowUp(v, g("fuInstruction") ? g("fuInstruction").value.trim() : "");
+    };
+
+    if (g("copyDraft")) g("copyDraft").onclick = function () {
+      copyText((v.email ? "Til: " + v.email + "\n" : "") + "Emne: " + g("draftSubject").value + "\n\n" + g("draftBody").value, "Mailen er");
+    };
+
+    if (g("sentDraft")) g("sentDraft").onclick = function () {
+      v.draft.subject = g("draftSubject").value;
+      v.draft.body = g("draftBody").value;
+      markSent(v);
+    };
+
+    if (g("dropDraft")) g("dropDraft").onclick = function () {
+      v.draft = null;
+      saveVendor(v).then(render);
+    };
+
+    if (g("doParse")) g("doParse").onclick = function () {
+      var t = g("replyBox").value.trim();
+      if (!t) { toast("Indsæt leverandørens svar først."); return; }
+      parseReply(v, t);
+    };
+
+    if (g("justSave")) g("justSave").onclick = function () {
+      var t = g("replyBox").value.trim();
+      if (!t) { toast("Indsæt leverandørens svar først."); return; }
+      v.messages = (v.messages || []).concat([{ dir: "in", text: t, at: new Date().toISOString() }]);
+      if (v.status === "afventer" || v.status === "udkast") v.status = "svaret";
+      saveVendor(v).then(render);
+    };
+
+    if (g("markReviewed")) g("markReviewed").onclick = function () {
+      v.quote.reviewed_at = new Date().toISOString();
+      v.quote.needs_human_review = false;
+      if (v.status === "tjek") v.status = (v.quote.price_min !== null || v.quote.price_max !== null) ? "tilbud" : "svaret";
+      saveVendor(v).then(render);
+    };
+
+    if (g("copyBooking")) g("copyBooking").onclick = function () { copyText(g("bookBody").value, "Udkastet er"); };
+
+    if (g("markBooked")) g("markBooked").onclick = function () {
+      v.status = "booket";
+      saveVendor(v).then(function () { toast("Markeret som booket. Agenten har ikke sendt noget."); render(); });
+    };
+  }
+
+  function wireQuestions() {
+    Array.prototype.forEach.call(document.querySelectorAll(".qsave"), function (b) {
+      b.onclick = function () {
+        var vid = b.getAttribute("data-v"), qid = b.getAttribute("data-q");
+        var input = document.querySelector('.qans[data-v="' + vid + '"][data-q="' + qid + '"]');
+        var ans = input ? input.value.trim() : "";
+        if (!ans) { toast("Skriv et svar først."); return; }
+        var v = state.vendors.filter(function (x) { return x.id === vid; })[0];
+        if (!v) return;
+        (v.questions || []).forEach(function (q) { if (q.id === qid) q.a = ans; });
+        saveVendor(v).then(function () { toast("Gemt. Agenten bruger det i næste mail."); render(); });
+      };
+    });
+  }
+
+  /* =====================================================================
+     Opstart. Siden tegnes først uden capabilities og lyser op bagefter.
+     ===================================================================== */
+
+  render();
+
+  if (window.claude && window.claude.use) {
+    window.claude.use("db").then(function (d) {
+      db = d;
+      state.ready = true;
+      if (!db) { render(); return; }
+
+      db.doc("wedding/current").onSnapshot(function (snap) {
+        if (!snap.exists) { render(); return; }
+        var data = snap.data();
+        if (!state.editBrief) state.wedding = data;
+        if (state.screen === "kick") state.screen = "brief";
+        render();
+      }, function () {});
+
+      db.collection("vendors").onSnapshot(function (snap) {
+        var list = [];
+        snap.docs.forEach(function (doc) {
+          var data = doc.data();
+          if (data) { data.id = data.id || doc.id; list.push(data); }
+        });
+        state.vendors = list;
+        if (state.selected && !list.some(function (x) { return x.id === state.selected; })) state.selected = null;
+        render();
+      }, function () {});
+    }, function () { state.ready = true; render(); });
+
+    window.claude.use("sample").then(function (s) {
+      sample = s;
+      state.ready = true;
+      render();
+    }, function () { state.ready = true; render(); });
+  } else {
+    state.ready = true;
+    render();
+  }
+})();
+</script>

@@ -99,10 +99,15 @@ plus-adressering i `Reply-To` → `In-Reply-To`/`References` mod vores egne
 `Message-ID`'er → leverandørens afsenderadresse. Ingen af dem holder alene:
 plus-adressen overlever klienter der taber `References`, og
 `In-Reply-To` overlever leverandører der skriver til afsenderadressen.
+Sidste trin bruges kun hvis matchet er entydigt — den samme leverandør kan
+være kontaktet for flere bryllupper, og et gæt ville svare med det forkerte
+pars oplysninger. Er der tvivl, ender mailen som uparret.
 
 Beslutningen om, *hvorvidt* der skal svares, ligger i `decideNextStep()` —
-almindelig kode, ikke i modellen. Modellen skriver teksten. Efter
-`MAX_TURNS_PER_THREAD` runder stopper agenten og overlader tråden til parret.
+almindelig kode, ikke i modellen. Modellen skriver teksten. Loftet
+`MAX_TURNS_PER_THREAD` tælles på agentens egne mails i tråden, inklusive dem
+der stadig ligger i køen; derover stopper agenten og overlader tråden til
+parret.
 
 ### 3. Lav sikkerhed → menneske
 
@@ -135,7 +140,7 @@ Ingen kode sender mail direkte. Alt går gennem `outbox`:
 ## Test
 
 ```bash
-npm test              # 69 tests, ingen netværk, ingen API-nøgle
+npm test              # 84 tests, ingen netværk, ingen API-nøgle
 npm run typecheck
 npm run eval:parse    # kræver ANTHROPIC_API_KEY — kalder den rigtige model
 ```
@@ -149,6 +154,60 @@ mails og holder resultatet op mod `tests/fixtures/expectations.json`. Kør
 den før og efter enhver ændring i `PARSE_SYSTEM` — det er den eneste måde
 at vide, om en promptændring hjalp.
 
+## Deploy: Render
+
+Backend'en er en Express-server med en outbox-worker, der takter mails over
+timer (fire minutters mellemrum, kontortid, maks. seks i timen). Den skal køre
+som én vedvarende proces — derfor en almindelig server og ikke serverless.
+
+Databasen er Render Postgres. Appen taler ren SQL over `pg` og bruger hverken
+Supabase-klient, auth eller Data API, så der er intet at hente ved at lægge
+databasen et andet sted end servicen.
+
+### Det kørende miljø
+
+| | |
+| --- | --- |
+| Service | `bryllupsplanlaegger` · <https://bryllupsplanlaegger.onrender.com> |
+| Database | `bryllup-db` · Postgres 17, frankfurt |
+| Kilde | Dockerfilen, bygget fra repoets branch |
+
+Skemaet kører af sig selv ved opstart; `migrate()` er idempotent, så der er
+intet særskilt migrationstrin.
+
+### Miljøvariabler
+
+Sat: `NODE_ENV=production`, `APP_USER`, `DRY_RUN=true`, `PORT`, `BASE_URL`.
+
+Skal sættes i Renders dashboard, fordi de er hemmeligheder:
+
+- **`APP_PASSWORD`** — servicen nægter at starte uden. Det er med vilje; se
+  afsnittet om adgang nedenfor.
+- **`DATABASE_URL`** — tag *Internal Database URL* fra databasen i dashboardet.
+  Intern, fordi service og database ligger i samme region. **Den er ikke
+  valgfri på en lille instans:** uden den falder `getDb()` tilbage på PGlite,
+  som er en hel Postgres i WebAssembly inde i Node-processen. På Renders
+  gratis-instans med 512 MB dør appen under opstart, før webserveren når at
+  åbne en port — målt: *Out of memory (used over 512Mi)* efter 52 sekunder.
+  Med `DATABASE_URL` sat bliver PGlite aldrig indlæst; importen er dynamisk
+  og ligger i den gren, der kun rammes uden en rigtig database.
+- **`ANTHROPIC_API_KEY`** — uden den fejler udkast og udtræk, men appen kører.
+
+Slår forbindelsen til databasen fejl med en TLS-fejl, så sæt `DATABASE_SSL`
+eksplicit. Uden den gættes der ud fra værtsnavnet.
+
+### To ting koster penge, før det bliver rigtigt
+
+Begge dele kører i dag på gratis-planen, hvilket er passende så længe
+`DRY_RUN=true` og der ikke ligger rigtige par i databasen:
+
+1. **Gratis-databasen udløber efter 30 dage.** Det er ikke et gæt — Renders
+   API svarer med et `expiresAt`-felt ved oprettelsen. Med rigtige data skal
+   den opgraderes inden da.
+2. **En gratis web service lukker ned ved inaktivitet.** Så holder
+   outbox-worker'en op med at tikke, og køen takter mails over timer. Det
+   fejler ikke synligt — afsendelsen stopper bare.
+
 ## Klar til produktion — huskeliste
 
 1. **Maildomæne.** SPF, DKIM og DMARC på `EMAIL_REPLY_DOMAIN`. Uden dem
@@ -157,7 +216,7 @@ at vide, om en promptændring hjalp.
    Mailgun) på `POST /webhooks/inbound` og sæt `INBOUND_WEBHOOK_SECRET`.
    Webhooken svarer 200 også ved fejl, så udbyderen ikke genleverer i
    ring — fejlen logges i `events`.
-3. **Database.** Sæt `DATABASE_URL` til Supabase eller anden Postgres.
+3. **Database.** `DATABASE_URL` mod Render Postgres eller anden Postgres.
 4. **`ANTHROPIC_API_KEY`.**
 5. **`DRY_RUN=false`** — bevidst, som sidste skridt.
 6. **Leverandørliste.** Demolisten i `src/discovery/seed.json` er opdigtet

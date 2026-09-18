@@ -25,6 +25,15 @@ interface Expectation {
   expect: Record<string, unknown>;
 }
 
+if (!config.anthropic.apiKey) {
+  console.error(
+    "ANTHROPIC_API_KEY er ikke sat.\n\n" +
+      "Denne eval kalder den rigtige model med vilje — det er hele pointen: den\n" +
+      "måler, om udtrækket holder på rigtige mails. Sæt nøglen i .env og kør igen.",
+  );
+  process.exit(1);
+}
+
 const spec = JSON.parse(
   fs.readFileSync(path.join(fixturesDir, "expectations.json"), "utf8"),
 ) as { cases: Expectation[] };

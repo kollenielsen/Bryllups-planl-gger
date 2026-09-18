@@ -10,15 +10,31 @@ function int(v: string | undefined, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+/** Som bool(), men uden default: usat betyder "afgør det selv", ikke "fra". */
+function triBool(v: string | undefined): boolean | null {
+  if (v === undefined || v === "") return null;
+  return ["1", "true", "yes", "on"].includes(v.toLowerCase());
+}
+
 export const config = {
   env: process.env.NODE_ENV ?? "development",
   port: int(process.env.PORT, 3000),
   baseUrl: process.env.BASE_URL ?? `http://localhost:${int(process.env.PORT, 3000)}`,
 
+  auth: {
+    // Basic Auth på dashboard og API. Tom: åben lokalt, men appen nægter at
+    // svare i produktion uden den — se src/http/auth.ts.
+    user: process.env.APP_USER ?? "bryllup",
+    password: process.env.APP_PASSWORD ?? "",
+  },
+
   db: {
     // Sat = rigtig Postgres (Supabase m.fl.). Tom = PGlite på disk, samme SQL-dialekt.
     url: process.env.DATABASE_URL ?? "",
     pgliteDir: process.env.PGLITE_DIR ?? "./data/pgdata",
+    // Usat: afgøres ud fra værtsnavnet. Sat: bestemmer selv — nødvendigt for
+    // en Postgres i Docker, hvis værtsnavn hverken er localhost eller fjernt.
+    ssl: triBool(process.env.DATABASE_SSL),
   },
 
   anthropic: {
@@ -67,7 +83,8 @@ export const config = {
   },
 
   agent: {
-    // Over dette antal runder pr. tråd stopper agenten og beder mennesket tage over.
+    // Maks. mails agenten selv sender i én tråd, inkl. førstehenvendelsen.
+    // Derover stopper den og beder mennesket tage over.
     maxTurnsPerThread: int(process.env.MAX_TURNS_PER_THREAD, 6),
     // Under denne tærskel flages udtrækket til manuel læsning.
     confidenceThreshold: Number(process.env.CONFIDENCE_THRESHOLD ?? 0.7),
