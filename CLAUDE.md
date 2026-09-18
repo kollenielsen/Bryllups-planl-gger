@@ -23,10 +23,12 @@ genpubliceres (samme URL kræver `url`-parameteren, ellers oprettes en ny).
 
 ## Branch og PR
 
-Vi arbejder på `claude/eloquent-bell-2u0836`. PR er
-[#1](https://github.com/kollenielsen/Bryllups-planl-gger/pull/1), åben som
-draft. Basen er `claude/wedding-vendor-outreach-mvp-u82pk4`, ikke
-default-branchen — tjek hvad du brancher fra.
+**Default-branchen hedder `claude/wedding-vendor-outreach-mvp-u82pk4`.** Repoet
+har ingen `main` — det er værd at vide, før du leder efter en.
+
+PR [#1](https://github.com/kollenielsen/Bryllups-planl-gger/pull/1) er merget
+ind i den, så alt ligger nu på default: verifikationslaget, adgangskoden, CI
+og hele deployet. Nyt arbejde brancher fra default og får sin egen PR.
 
 ## Før du ændrer noget
 
@@ -159,10 +161,9 @@ Tre ting om driften:
   databasevalg. PGlite-importen er dynamisk, så en sat `DATABASE_URL`
   betyder, at WASM'en aldrig indlæses.
 
-Servicen peger indtil videre på `claude/eloquent-bell-2u0836`, fordi
-default-branchen endnu ikke har adgangskoden. **Når PR #1 er merget, skal
-branchen skiftes til default** — ellers deployer den fra en branch, der før
-eller siden forsvinder.
+Servicen skal deploye fra default-branchen. Renders API kan ikke ændre den
+indstilling — kun oprette services, læse dem og sætte miljøvariabler — så
+branchen skiftes i dashboardet under *Settings*.
 
 ## Regler der ikke må regressere
 
