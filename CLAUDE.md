@@ -152,6 +152,12 @@ Tre ting om driften:
 - **`tsx` er en runtime-afhængighed, ikke en dev-afhængighed.** `npm start`
   er `tsx src/main.ts`, og `NODE_ENV=production npm ci` springer
   devDependencies over. Flyttes den tilbage, starter appen ikke i produktion.
+- **`DATABASE_URL` skal være sat i drift.** Uden den falder `getDb()` tilbage
+  på PGlite — en hel Postgres i WebAssembly inde i Node-processen. Den fylder
+  mere end de 512 MB på Renders gratis-instans, og appen dør under opstart,
+  før den åbner en port. Fejlen ligner et hostingproblem, men er et
+  databasevalg. PGlite-importen er dynamisk, så en sat `DATABASE_URL`
+  betyder, at WASM'en aldrig indlæses.
 
 Servicen peger indtil videre på `claude/eloquent-bell-2u0836`, fordi
 default-branchen endnu ikke har adgangskoden. **Når PR #1 er merget, skal

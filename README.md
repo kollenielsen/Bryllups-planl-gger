@@ -184,7 +184,13 @@ Skal sættes i Renders dashboard, fordi de er hemmeligheder:
 - **`APP_PASSWORD`** — servicen nægter at starte uden. Det er med vilje; se
   afsnittet om adgang nedenfor.
 - **`DATABASE_URL`** — tag *Internal Database URL* fra databasen i dashboardet.
-  Intern, fordi service og database ligger i samme region.
+  Intern, fordi service og database ligger i samme region. **Den er ikke
+  valgfri på en lille instans:** uden den falder `getDb()` tilbage på PGlite,
+  som er en hel Postgres i WebAssembly inde i Node-processen. På Renders
+  gratis-instans med 512 MB dør appen under opstart, før webserveren når at
+  åbne en port — målt: *Out of memory (used over 512Mi)* efter 52 sekunder.
+  Med `DATABASE_URL` sat bliver PGlite aldrig indlæst; importen er dynamisk
+  og ligger i den gren, der kun rammes uden en rigtig database.
 - **`ANTHROPIC_API_KEY`** — uden den fejler udkast og udtræk, men appen kører.
 
 Slår forbindelsen til databasen fejl med en TLS-fejl, så sæt `DATABASE_SSL`
