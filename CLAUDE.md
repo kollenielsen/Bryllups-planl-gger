@@ -31,11 +31,11 @@ default-branchen — tjek hvad du brancher fra.
 ## Før du ændrer noget
 
 ```bash
-npm install && npm test     # 91 tests, ingen netværk, ingen API-nøgle
+npm install && npm test     # 100 tests, ingen netværk, ingen API-nøgle
 npm run typecheck
 ```
 
-Alle 91 skal være grønne, før du rører ved noget. Testene kører hele den
+Alle 100 skal være grønne, før du rører ved noget. Testene kører hele den
 indgående vej mod en scriptet model og en Postgres i hukommelsen, med rigtige
 danske leverandørsvar i `tests/fixtures/emails/`.
 
@@ -106,6 +106,24 @@ Disse er med vilje og skal ikke "rettes" til at ligne hinanden:
   `(?<![\d.,])` i `src/` — samme resultat, men uden lookbehind af hensyn til
   ældre browsere.
 
+## Adgang
+
+`/api/*` og den statiske frontend er bag Basic Auth (`src/http/auth.ts`,
+`APP_USER` / `APP_PASSWORD`). Appen er bygget til ét par ad gangen og har
+ingen brugerkonti; skal flere par dele en installation, er svaret rigtige
+konti — ikke en ekstra delt kode.
+
+To ting står bevidst åbne, og rækkefølgen i `createApp()` er selve politikken:
+
+- `/health`, så en platform kan sundhedstjekke appen.
+- `/webhooks/*`, fordi mailudbyderen ikke kan sende Basic Auth. Den har sin
+  egen hemmelighed i `INBOUND_WEBHOOK_SECRET`.
+
+Uden `APP_PASSWORD` er appen åben lokalt, men **nægter at starte** med
+`NODE_ENV=production`. Det er med vilje: en gate, der falder tilbage til at
+lukke op, er værre end ingen gate, fordi en glemt miljøvariabel så lægger alt
+åbent uden at nogen opdager det.
+
 ## Regler der ikke må regressere
 
 Hver af disse er en fejl, der har været der én gang, og som en test nu holder
@@ -133,6 +151,9 @@ fast. Ændrer du noget i nærheden, så læs testen først.
   besvares ud fra faktaarket, lander i `open_questions` til parret.
 - **SQL-kolonnenavne kommer aldrig fra en request-body.** `markQuoteReviewed()`
   bygger sin `SET`-liste fra en fast kolonneliste.
+- **Adgangskoden må aldrig fejle åben.** Mangler `APP_PASSWORD` i produktion,
+  skal appen nægte at starte — ikke lukke op. Sammenligningen af koden sker i
+  konstant tid.
 - **Agenten accepterer ikke tilbud.** `buildBookingSummary()` laver et udkast,
   parret selv sender. Ingen depositum, ingen underskrift.
 
