@@ -46,9 +46,9 @@ danske leverandørsvar i `tests/fixtures/emails/`.
 Uden `DATABASE_URL` kører appen på PGlite — Postgres i WASM, intet at
 installere. Det er default og fint til at komme i gang.
 
-Produktionen er rigtig Postgres (Supabase), og `npm test` rammer **aldrig**
-pg-driveren i `src/db/index.ts`: testharnessen bruger `useInMemoryDb()`, som
-altid er PGlite. Vil du teste den sti, så kør en rigtig Postgres:
+Produktionen er Render Postgres, og `npm test` rammer **aldrig** pg-driveren i
+`src/db/index.ts`: testharnessen bruger `useInMemoryDb()`, som altid er PGlite.
+Vil du teste den sti, så kør en rigtig Postgres:
 
 ```bash
 docker compose up -d db     # Postgres 16 på localhost:5432
@@ -160,6 +160,16 @@ Tre ting om driften:
   før den åbner en port. Fejlen ligner et hostingproblem, men er et
   databasevalg. PGlite-importen er dynamisk, så en sat `DATABASE_URL`
   betyder, at WASM'en aldrig indlæses.
+
+Dashboardet findes også som et fastfrosset øjebliksbillede, man kan browse
+uden server, nøgle eller adgangskode:
+<https://claude.ai/artifact/3LyVb57eSYoxeMyNj2uuRE>
+
+Det er ikke en fil i repoet, men genereret: kør `npm run demo`, start serveren
+mod den samme `PGLITE_DIR`, hent `/api/config`, `/api/weddings`,
+`/api/weddings/:id/dashboard`, `/api/weddings/:id/outbox` og `/api/threads/:id`,
+og læg dem ind bag en `fetch`-shim sammen med `src/public/`. Den går stale, hvis
+frontend'en ændrer sig — så genskab den frem for at rette i den.
 
 Servicen skal deploye fra default-branchen. Renders API kan ikke ændre den
 indstilling — kun oprette services, læse dem og sætte miljøvariabler — så
