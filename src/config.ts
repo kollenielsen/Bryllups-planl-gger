@@ -10,6 +10,12 @@ function int(v: string | undefined, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
+/** Som bool(), men uden default: usat betyder "afgør det selv", ikke "fra". */
+function triBool(v: string | undefined): boolean | null {
+  if (v === undefined || v === "") return null;
+  return ["1", "true", "yes", "on"].includes(v.toLowerCase());
+}
+
 export const config = {
   env: process.env.NODE_ENV ?? "development",
   port: int(process.env.PORT, 3000),
@@ -19,6 +25,9 @@ export const config = {
     // Sat = rigtig Postgres (Supabase m.fl.). Tom = PGlite på disk, samme SQL-dialekt.
     url: process.env.DATABASE_URL ?? "",
     pgliteDir: process.env.PGLITE_DIR ?? "./data/pgdata",
+    // Usat: afgøres ud fra værtsnavnet. Sat: bestemmer selv — nødvendigt for
+    // en Postgres i Docker, hvis værtsnavn hverken er localhost eller fjernt.
+    ssl: triBool(process.env.DATABASE_SSL),
   },
 
   anthropic: {

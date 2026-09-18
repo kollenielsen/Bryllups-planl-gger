@@ -14,6 +14,37 @@ export interface Db {
 
 let instance: Db | null = null;
 
+/** Værter der altid ligger på maskinen selv. */
+const LOCAL_HOST = /^(?:localhost|127(?:\.\d+){1,3}|\[?::1\]?|0\.0\.0\.0)$/i;
+
+/**
+ * Skal forbindelsen bruge TLS?
+ *
+ * Supabase og andre hostede databaser kræver det. En Postgres i Docker på
+ * samme netværk taler ren TCP og afviser SSLRequest, så et forsøg dér er ikke
+ * bare unødvendigt — det er en hård forbindelsesfejl.
+ *
+ * Værtsnavnet alene kan ikke afgøre det: en compose-service hedder fx `db` og
+ * er hverken localhost eller fjern. Derfor kan `DATABASE_SSL` sætte det
+ * eksplicit. Uden den gættes der på værtsnavnet, hvilket dækker de to
+ * almindelige tilfælde — localhost og en hostet database.
+ */
+export function resolveSslOption(
+  url: string,
+  explicit: boolean | null,
+): false | { rejectUnauthorized: boolean } {
+  if (explicit !== null) return explicit ? { rejectUnauthorized: false } : false;
+  return isLocalHost(url) ? false : { rejectUnauthorized: false };
+}
+
+function isLocalHost(url: string): boolean {
+  try {
+    return LOCAL_HOST.test(new URL(url).hostname);
+  } catch {
+    return url.includes("localhost");
+  }
+}
+
 /**
  * Én SQL-dialekt, to drivere. DATABASE_URL sat => rigtig Postgres (Supabase).
  * Ellers PGlite (Postgres kompileret til WASM) med fil-persistens, så MVP'en
@@ -26,7 +57,7 @@ export async function getDb(): Promise<Db> {
     const { default: pg } = await import("pg");
     const pool = new pg.Pool({
       connectionString: config.db.url,
-      ssl: config.db.url.includes("localhost") ? undefined : { rejectUnauthorized: false },
+      ssl: resolveSslOption(config.db.url, config.db.ssl),
       max: 5,
     });
     instance = {

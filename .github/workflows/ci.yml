@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+# Et nyt push til samme branch afløser en kørsel, der stadig er i gang.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Typecheck og tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # Ingen netværk, ingen API-nøgle: testene kører mod en scriptet model og
+      # PGlite i hukommelsen.
+      - run: npm test
+
+  postgres:
+    name: Skema mod rigtig Postgres
+    runs-on: ubuntu-latest
+    # `npm test` kører udelukkende mod PGlite, så pg-driveren i
+    # src/db/index.ts og skemaet mod rigtig Postgres er ellers udækket.
+    # Produktionen er Supabase; det hul er værd at lukke i CI.
+    services:
+      db:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: bryllup
+          POSTGRES_PASSWORD: bryllup
+          POSTGRES_DB: bryllup
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U bryllup -d bryllup"
+          --health-interval 3s
+          --health-timeout 3s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      # Skemaet er idempotent, så anden kørsel skal også gå rent igennem.
+      - run: npm run migrate && npm run migrate
+        env:
+          DATABASE_URL: postgresql://bryllup:bryllup@127.0.0.1:5432/bryllup
+          DATABASE_SSL: "false"

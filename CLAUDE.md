@@ -31,13 +31,43 @@ default-branchen — tjek hvad du brancher fra.
 ## Før du ændrer noget
 
 ```bash
-npm install && npm test     # 84 tests, ingen netværk, ingen API-nøgle
+npm install && npm test     # 91 tests, ingen netværk, ingen API-nøgle
 npm run typecheck
 ```
 
-Alle 84 skal være grønne, før du rører ved noget. Testene kører hele den
+Alle 91 skal være grønne, før du rører ved noget. Testene kører hele den
 indgående vej mod en scriptet model og en Postgres i hukommelsen, med rigtige
 danske leverandørsvar i `tests/fixtures/emails/`.
+
+### Databasen lokalt
+
+Uden `DATABASE_URL` kører appen på PGlite — Postgres i WASM, intet at
+installere. Det er default og fint til at komme i gang.
+
+Produktionen er rigtig Postgres (Supabase), og `npm test` rammer **aldrig**
+pg-driveren i `src/db/index.ts`: testharnessen bruger `useInMemoryDb()`, som
+altid er PGlite. Vil du teste den sti, så kør en rigtig Postgres:
+
+```bash
+docker compose up -d db     # Postgres 16 på localhost:5432
+# i .env:  DATABASE_URL=postgresql://bryllup:bryllup@localhost:5432/bryllup
+npm run dev
+```
+
+`docker compose up --build` kører hele stakken i containere i stedet.
+`docker compose down -v` sletter også data.
+
+`DATABASE_SSL` afgør TLS mod databasen. Usat gættes der på værtsnavnet:
+localhost uden, alt andet med. En Postgres i Docker taler ren TCP og afviser
+SSLRequest, så mod et compose-servicenavn (`db`) skal den sættes til `false`
+— ellers er det en hård forbindelsesfejl, ikke bare et unødigt håndtryk.
+
+### CI
+
+`.github/workflows/ci.yml` kører på hvert push og hver PR: `npm run typecheck`
++ `npm test`, og et separat job der kører `npm run migrate` to gange mod en
+rigtig Postgres 16. Det andet job findes, fordi skemaet og pg-driveren ellers
+kun er afprøvet mod PGlite — og fordi skemaet påstår at være idempotent.
 
 `npm run eval:parse` kræver `ANTHROPIC_API_KEY` og kalder den rigtige model.
 Kør den før og efter enhver ændring i `PARSE_SYSTEM` — det er den eneste måde
