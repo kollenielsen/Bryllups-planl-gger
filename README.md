@@ -140,7 +140,7 @@ Ingen kode sender mail direkte. Alt går gennem `outbox`:
 ## Test
 
 ```bash
-npm test              # 69 tests, ingen netværk, ingen API-nøgle
+npm test              # 84 tests, ingen netværk, ingen API-nøgle
 npm run typecheck
 npm run eval:parse    # kræver ANTHROPIC_API_KEY — kalder den rigtige model
 ```
