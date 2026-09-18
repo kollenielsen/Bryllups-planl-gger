@@ -127,7 +127,20 @@ lukke op, er værre end ingen gate, fordi en glemt miljøvariabel så lægger al
 ## Deploy
 
 Render kører backend'en fra `Dockerfile` efter `render.yaml`; Supabase er
-databasen. Se README for trinene. To ting er værd at huske her:
+databasen. Se README for trinene.
+
+Supabase-projektet er `supabase-citrine-pebble`
+(`ubndlpawbcmpmoiidreo`, eu-central-1, Postgres 17). Skemaet er lagt ind, og
+alle elleve tabeller har RLS slået til. Bemærk to ting om det projekt:
+
+- **Det deles med en anden app.** `public.profiler` og funktionen
+  `public.opret_profil()` hører ikke til her. Lad dem være.
+- **Organisationen er Vercel-provisioneret** (`vercel_icfg_…`). Ifølge
+  Supabases dokumentation kan projekter i sådan en organisation *kun*
+  oprettes via Vercels dashboard, og faktureringen løber over Vercel. Et nyt
+  projekt kan altså ikke oprettes herfra.
+
+To ting er værd at huske om driften:
 
 - **Ikke gratis-planen på Render.** En service, der lukker ned ved
   inaktivitet, stopper outbox-worker'en, og køen takter mails over timer.
